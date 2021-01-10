@@ -1,15 +1,15 @@
 post_install() {    
-    systemctl enable --now pacman-auto-update.timer || true
+    systemctl enable --now pacman_sync.timer || true
 }
 
 post_upgrade() {
     systemctl --system daemon-reload >/dev/null || true
-    systemctl restart pacman-auto-update.timer || true
+    systemctl restart pacman_sync.timer || true
 }
 
 pre_remove() {
     if [ -d /run/systemd/system ]; then
-        systemctl disable --now pacman-auto-update.timer >/dev/null
+        systemctl disable --now pacman_sync.timer >/dev/null
     fi
 }
 

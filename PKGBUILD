@@ -1,19 +1,17 @@
-# Maintainer: Christian Münch <christian@muench-worms.de>
-pkgname=pacman-auto-update
-pkgver=1.0.1
-pkgrel=2
-pkgdesc="Install a systemd service triggered by a timer to run automatic pacman package updates"
+# Maintainer: Zachary Kraehling <zaknyy@protonmail.com>
+pkgname=pacman_sync
+pkgver=0.01
+pkgrel=1
+pkgdesc="Systemd service / timer combo for automatic package updates"
 arch=('any')
-url="https://github.com/cmuench/pacman-auto-update.git"
-license=('GPL')
+url="https://github.com/7astro7/pacman_sync.git"
+license=('GPL3')
 install=${pkgname}.install
 changelog=
 depends=(systemd)
 source=("${pkgname}.service"
         "${pkgname}.timer")
-md5sums=('8813d126331d900ab7368bcab156b56d'
-         'e68d3424ad02a8a78de4fae56945f09f')
-
+md5sums=() # generate with 'makepkg -g'
 package() {
     install -d -m755 "$pkgdir/usr/lib/systemd/system"
     install -m644 ${pkgname}.service "$pkgdir/usr/lib/systemd/system/"

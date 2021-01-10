@@ -1,16 +1,2 @@
-pkgbase = pacman-auto-update
-	pkgdesc = Install a systemd service triggered by a timer to run automatic pacman package updates
-	pkgver = 1.0.1
-	pkgrel = 2
-	url = https://github.com/cmuench/pacman-auto-update.git
-	install = pacman-auto-update.install
-	arch = any
-	license = GPL
-	depends = systemd
-	source = pacman-auto-update.service
-	source = pacman-auto-update.timer
-	md5sums = 8813d126331d900ab7368bcab156b56d
-	md5sums = e68d3424ad02a8a78de4fae56945f09f
-
-pkgname = pacman-auto-update
-
+md5sums=('43a49bbd3e115974d287ca3d7bafb0ce'
+         '6ffad926b29513d3612a739c65c923fe')

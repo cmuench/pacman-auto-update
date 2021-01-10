@@ -1,0 +1,11 @@
+[Unit]
+Description=realtime timer to automatically update out-of-date system packages via pacman every 3 hours
+
+[Timer]
+OnBootSec=5min
+OnCalendar=*-*-* 1/3:00:00
+Persistent=true
+Unit=pacman_sync.service
+
+[Install]
+WantedBy=timers.target

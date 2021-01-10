@@ -1,16 +1,13 @@
-# Pacman Auto Update
+# Pacman Sync
 
-Arch Linux package to install a systemd service and timer which updates the system every hour if needed.
+Arch Linux package to install a systemd service / timer combo for automatic package updates
 
-## See timer
+# Package Status
 
-Look for a timer with name `pacman-auto-update.timer`
-
-
-```sh
-systemctl list-timers
-```
+Not ready
 
 ## License
 
 Source code original found here: https://www.techrapid.uk/2017/04/automatically-update-arch-linux-with-systemd.html
+
+Forked from https://github.com/cmuench/pacman-auto-update
