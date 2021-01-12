@@ -1,5 +1,5 @@
 [Unit]
-Description=realtime timer to automatically update out-of-date system packages via pacman every 3 hours
+Description=realtime timer to update out-of-date system packages via pacman every 3 hours
 
 [Timer]
 OnBootSec=5min

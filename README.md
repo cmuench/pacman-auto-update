@@ -6,6 +6,12 @@ Arch Linux package to install a systemd service / timer combo for automatic pack
 
 Not ready
 
+# Installation 
+
+- $ makepkg 
+
+- $ makepkg --install 
+
 ## License
 
 Source code original found here: https://www.techrapid.uk/2017/04/automatically-update-arch-linux-with-systemd.html
