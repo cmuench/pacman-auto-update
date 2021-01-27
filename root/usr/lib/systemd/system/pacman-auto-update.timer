@@ -1,5 +1,5 @@
 [Unit]
-Description=Automaticaly updates official software packages after 5 minutes of boot and 60 minutes post-boot
+Description=Pacman Auto Update Timer
 
 [Timer]
 OnBootSec=5min

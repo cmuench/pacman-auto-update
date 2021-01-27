@@ -1,5 +1,5 @@
 [Unit]
-Description=Keeps official software packages automatically updated under non metered Internet
+Description=Pacman Auto Update
 After=network-online.target
 
 [Service]

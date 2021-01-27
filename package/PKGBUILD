@@ -30,11 +30,6 @@ pkgver="$(
 
 
 package() {
-	install -d -m755 "${pkgdir}/usr/lib/pacman-auto-update/"
-	install -d -m755 "${pkgdir}/usr/lib/systemd/system"
-	
-	install -m755 "${pkgname}" "${pkgdir}/usr/lib/pacman-auto-update/"
-	install -m644 "${pkgname}.service" "${pkgdir}/usr/lib/systemd/system/"
-	install -m644 "${pkgname}.timer" "${pkgdir}/usr/lib/systemd/system/"
+	cp --recursive "${srcdir}/${pkgname}/root"/* "${pkgdir}"
 }
 
