@@ -1,0 +1,11 @@
+[Unit]
+Description=Keeps official software packages automatically updated under non metered Internet
+After=network-online.target
+
+[Service]
+ExecStart=/usr/lib/pacman-auto-update/pacman-auto-update
+KillMode=process
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target

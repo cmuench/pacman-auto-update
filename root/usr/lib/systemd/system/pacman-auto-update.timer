@@ -1,8 +1,10 @@
 [Unit]
-Description=Automatic Update when booted up after 5 minutes then check the system for updates every 60 minutes
+Description=Automaticaly updates official software packages after 5 minutes of boot and 60 minutes post-boot
+
 [Timer]
 OnBootSec=5min
 OnUnitActiveSec=60min
 Unit=pacman-auto-update.service
+
 [Install]
 WantedBy=multi-user.target
