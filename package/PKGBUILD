@@ -4,7 +4,7 @@ pkgname="pacman-auto-update"
 install="${pkgname}.install"
 
 pkgdesc="Keeps official software packages automatically updated under non metered Internet"
-url="https://github.com/es20490446e/pacman-auto-update"
+url="https://github.com/cmuench/pacman-auto-update"
 license=("GPL2")
 
 pkgrel=1
