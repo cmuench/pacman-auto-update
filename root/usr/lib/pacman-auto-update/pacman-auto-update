@@ -25,4 +25,5 @@ prepareEnvironment () {
 }
 
 
+prepareEnvironment
 mainFunction
