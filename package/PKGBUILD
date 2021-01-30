@@ -1,0 +1,35 @@
+#! /bin/bash
+
+pkgname="pacman-auto-update"
+install="${pkgname}.install"
+
+pkgdesc="Keeps official software packages automatically updated under non metered Internet"
+url="https://github.com/cmuench/pacman-auto-update"
+license=("GPL2")
+
+pkgrel=1
+arch=("any")
+
+depends=("networkmanager")
+source=("git+${url}")
+md5sums=("SKIP")
+
+
+pkgver="$(
+	local date="$(
+		curl --silent --connect-timeout 1 --retry 3 "${url}/commits" |
+		grep "datetime" |
+		head -n1 |
+		cut --delimiter='"' --fields=2
+	)"
+	
+	if [[ ! -z "${date}" ]]; then
+		date +%s --date "${date}"
+	fi
+)"
+
+
+package() {
+	cp --recursive "${srcdir}/${pkgname}/root"/* "${pkgdir}"
+}
+
