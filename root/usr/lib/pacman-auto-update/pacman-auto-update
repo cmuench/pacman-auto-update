@@ -10,6 +10,7 @@ mainFunction () {
 
 connectionIsMetered () {
 	if [[ -f "/usr/bin/nmcli" ]] &&
+	[[ ! -z "$(systemctl status NetworkManager | grep "running")" ]] &&
 	[[ ! -z "$(nmcli --terse --fields GENERAL.METERED dev show | grep "yes")" ]]; then
 		true
 	else
