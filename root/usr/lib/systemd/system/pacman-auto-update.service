@@ -4,6 +4,7 @@ After=network-online.target
 
 [Service]
 ExecStart=/usr/lib/pacman-auto-update/pacman-auto-update
+Nice=19
 KillMode=process
 KillSignal=SIGINT
 
