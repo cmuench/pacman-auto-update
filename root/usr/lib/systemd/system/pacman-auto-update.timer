@@ -3,7 +3,8 @@ Description=Pacman Auto Update Timer
 
 [Timer]
 OnBootSec=5min
-OnUnitActiveSec=60min
+OnUnitInactiveSec=60min
+RandomizedDelaySec=10min
 Unit=pacman-auto-update.service
 
 [Install]
