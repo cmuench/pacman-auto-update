@@ -1,4 +1,4 @@
-# Pacman Auto Update
+## Description
 
 Keeps packages from compiled repositories updated hourly.
 
@@ -21,14 +21,3 @@ Of the timer:
 ```sh
 systemctl list-timers pacman-auto-update
 ```
-
-## Credits
-
-For a list of contributors, in the application "terminal" type:
-
-> git clone https://github.com/cmuench/pacman-auto-update &> /dev/null; cd pacman-auto-update; git shortlog --summary --numbered --email; cd ..; rm -rf pacman-auto-update
-
-Part of the original source code was found at:
-
-https://www.techrapid.uk/2017/04/automatically-update-arch-linux-with-systemd.html
-

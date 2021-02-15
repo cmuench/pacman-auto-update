@@ -6,7 +6,7 @@ After=network-online.target
 ExecStart=/usr/lib/pacman-auto-update/pacman-auto-update
 Nice=19
 KillMode=process
-KillSignal=SIGINT
+SendSIGKILL=no
 
 [Install]
 WantedBy=multi-user.target
