@@ -1,4 +1,4 @@
-## Description
+# Pacman Auto Update
 
 Keeps packages from compiled repositories updated hourly.
 
