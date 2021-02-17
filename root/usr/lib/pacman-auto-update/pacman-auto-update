@@ -1,29 +1,130 @@
 #! /bin/bash
 
+verbose=0
+
 
 mainFunction () {
 	if ! connectionIsMetered && [[ ! -f "/var/lib/pacman/db.lck" ]]; then
-		sudo pacman --sync --refresh --sysupgrade --quiet --noconfirm
+		ifNotInterrupted downloadUpdates
+		ifNotInterrupted waitFor installUpdates
 	fi
+}
+
+
+checkPermissions () {
+	if [[ "$(id -u)" -ne 0 ]]; then
+		sudo "${0}"
+		exit "${?}"
+	fi
+}
+
+
+checkVerbose () {
+	if [[ "${verbose}" -ne 0 ]] && [[ "${verbose}" -ne 1 ]]; then
+		echo "Invalid verbose=${verbose}" >&2
+		echo "Verbose can either be 0 or 1"
+		exit 1
+	fi
+}
+
+
+configureTrap () {
+	interrupted=""
+	setTrap "nonCriticalTrap"
 }
 
 
 connectionIsMetered () {
-	if [[ -f "/usr/bin/nmcli" ]] &&
-	[[ ! -z "$(systemctl status NetworkManager | grep "running")" ]] &&
-	[[ ! -z "$(nmcli --terse --fields GENERAL.METERED dev show | grep "yes")" ]]; then
-		true
+	[[ -f "/usr/bin/nmcli" ]] &&
+	systemctl status NetworkManager | grep --quiet "running" &&
+	nmcli --terse --fields GENERAL.METERED dev show | grep --quiet "yes"
+}
+
+
+criticalTrap () {
+	nonCriticalTrap
+	printf "\n----Waiting for critical part to finish----\n" >&2
+}
+
+
+downloadUpdates () {
+	echo
+	echo "=== DOWNLOADING UPDATES ==="
+	pacman --sync --refresh --sysupgrade --downloadonly --quiet --noconfirm
+	echo
+}
+
+
+ifNotInterrupted () {
+	local command="${*}"
+
+	if [[ -z "${interrupted}" ]]; then
+		${command}
 	else
-		false
+		exit 0
 	fi
 }
 
 
+installUpdates () {
+	echo "=== INSTALLING UPDATES ==="
+	pacman --sync --refresh --sysupgrade --quiet --noconfirm
+	echo
+	
+	echo "=== PRUNING OLD CACHED PACKAGES ==="
+	paccache --remove --keep 3
+	echo
+}
+
+
+nonCriticalTrap () {
+	interrupted=1
+}
+
+
 prepareEnvironment () {
-	set -e
-	trap "" INT QUIT TERM EXIT
+	set -eum
+	configureTrap
+	checkPermissions
+	checkVerbose
+}
+
+
+setTrap () {
+	local operation="${*}"
+	# shellcheck disable=SC2064
+	trap "${operation}" ABRT ERR HUP INT QUIT TERM
+}
+
+
+silently () {
+	local commands="${*}"
+	
+	if [[ "${verbose}" -eq 0 ]]; then
+		${commands} 1>/dev/null
+	else
+		${commands}
+	fi
+}
+
+
+waitFor () {
+	local command="${*}"
+	
+	setTrap "criticalTrap"
+	${command} &
+	
+	while wait "${!}"; status="${?}"; [[ "${status}" -ge 128 ]]; do
+		sleep 1
+	done
+	
+	if [[ "${status}" -ne 0 ]]; then
+		exit "${status}"
+	fi
+	
+	setTrap "nonCriticalTrap"
 }
 
 
 prepareEnvironment
-mainFunction
+silently mainFunction
