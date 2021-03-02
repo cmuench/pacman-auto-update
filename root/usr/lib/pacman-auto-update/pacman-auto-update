@@ -1,13 +1,36 @@
 #! /bin/bash
 
+# For debugging:
 verbose=0
+forceUpdate=0
+
+# Other:
+lock="/var/lib/pacman/db.lck"
 
 
 mainFunction () {
-	if ! connectionIsMetered && [[ ! -f "/var/lib/pacman/db.lck" ]]; then
-		ifNotInterrupted downloadUpdates
-		ifNotInterrupted waitFor installUpdates
+	if batteryIsCharged && ! connectionIsMetered && [[ ! -f "${lock}" ]]; then
+		update "pacman"
 	fi
+}
+
+
+batteryIsCharged () {
+	local capacity="/sys/class/power_supply/BAT1/capacity"
+	[[ "${forceUpdate}" -eq 1 ]] || [[ -f "${capacity}" && "$(cat "${capacity}")" -gt 90 ]]
+}
+
+
+checkDebugVariables () {
+	local variables=("verbose" "forceUpdate")
+
+	for variable in "${variables[@]}"; do
+		if [[ "${!variable}" -ne 0 ]] && [[ "${!variable}" -ne 1 ]]; then
+			echo "Invalid ${variable}=${!variable}" >&2
+			echo "It can either be 0 or 1"
+			exit 1
+		fi
+	done
 }
 
 
@@ -15,15 +38,6 @@ checkPermissions () {
 	if [[ "$(id -u)" -ne 0 ]]; then
 		sudo "${0}"
 		exit "${?}"
-	fi
-}
-
-
-checkVerbose () {
-	if [[ "${verbose}" -ne 0 ]] && [[ "${verbose}" -ne 1 ]]; then
-		echo "Invalid verbose=${verbose}" >&2
-		echo "Verbose can either be 0 or 1"
-		exit 1
 	fi
 }
 
@@ -43,15 +57,7 @@ connectionIsMetered () {
 
 criticalTrap () {
 	nonCriticalTrap
-	printf "\n----Waiting for critical part to finish----\n" >&2
-}
-
-
-downloadUpdates () {
-	echo
-	echo "=== DOWNLOADING UPDATES ==="
-	pacman --sync --refresh --sysupgrade --downloadonly --quiet --noconfirm
-	echo
+	printf "\n🕑 Waiting for critical part to finish\n"
 }
 
 
@@ -67,13 +73,10 @@ ifNotInterrupted () {
 
 
 installUpdates () {
-	echo "=== INSTALLING UPDATES ==="
-	pacman --sync --refresh --sysupgrade --quiet --noconfirm
-	echo
-	
-	echo "=== PRUNING OLD CACHED PACKAGES ==="
-	paccache --remove --keep 3
-	echo
+	local packageManager="${1}"
+	local options="${2} --sync --refresh --sysupgrade --noconfirm"
+
+	so "installUpdates: ${packageManager} ${options}" "${packageManager} ${options}"
 }
 
 
@@ -82,11 +85,35 @@ nonCriticalTrap () {
 }
 
 
+outdatedPackages () {
+	local packageManager="${1}"
+	
+	${packageManager} --query --upgrades 2> "/dev/null" || true
+}
+
+
 prepareEnvironment () {
-	set -eum
+	set -em
 	configureTrap
 	checkPermissions
-	checkVerbose
+	checkDebugVariables
+}
+
+
+pruneOldPackages () {
+	pruneOrphans
+	so "pruneOldPackages: uninstalled" paccache --remove --uninstalled --keep 0
+	so "pruneOldPackages: oldVersions" paccache --remove --keep 2
+}
+
+
+pruneOrphans () {
+	local orphans; orphans="$(pacman --query --deps --unrequired --quiet || true)"
+	
+	if [[ -n "${orphans}" ]]; then
+		# shellcheck disable=SC2086
+		so "pruneOrphans" "pacman --noconfirm --remove --recursive --unneeded ${orphans}"
+	fi
 }
 
 
@@ -97,13 +124,32 @@ setTrap () {
 }
 
 
-silently () {
-	local commands="${*}"
+so () {
+	local tag="${1}"
+	local commands="${*:2}"
 	
-	if [[ "${verbose}" -eq 0 ]]; then
-		${commands} 1>/dev/null
-	else
-		${commands}
+	if [[ "${verbose}" -eq 1 ]]; then
+		if ! ${commands}; then
+			exit "${?}"
+		fi
+	elif ! error="$(eval "${commands}" 2>&1 >"/dev/null")" ; then
+		if [ "${error}" == "" ] ; then
+			error="Command failed: ${commands}"
+		fi
+
+		echo "${tag}: ${error}" >&2
+		exit 1
+	fi
+}
+
+
+update () {
+	local packageManager="${*}"
+	
+	if [[ "${forceUpdate}" -eq 1 ]] || [[ -n "$(outdatedPackages "${packageManager}")" ]]; then
+		ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
+		ifNotInterrupted waitFor installUpdates "${packageManager}"
+		ifNotInterrupted waitFor pruneOldPackages
 	fi
 }
 
@@ -127,4 +173,4 @@ waitFor () {
 
 
 prepareEnvironment
-silently mainFunction
+mainFunction
