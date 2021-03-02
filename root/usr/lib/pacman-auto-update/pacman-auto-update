@@ -4,12 +4,11 @@
 verbose=0
 forceUpdate=0
 
-# Other:
-lock="/var/lib/pacman/db.lck"
-
 
 mainFunction () {
-	if batteryIsCharged && ! connectionIsMetered && [[ ! -f "${lock}" ]]; then
+	removeOrphanLock
+
+	if ! connectionIsMetered; then
 		update "pacman"
 	fi
 }
@@ -64,7 +63,7 @@ criticalTrap () {
 ifNotInterrupted () {
 	local command="${*}"
 
-	if [[ -z "${interrupted}" ]]; then
+	if [[ -z "${interrupted}" ]] && batteryIsCharged; then
 		${command}
 	else
 		exit 0
@@ -74,7 +73,7 @@ ifNotInterrupted () {
 
 installUpdates () {
 	local packageManager="${1}"
-	local options="${2} --sync --refresh --sysupgrade --noconfirm"
+	local options="--sync --refresh --sysupgrade --noconfirm ${2}"
 
 	so "installUpdates: ${packageManager} ${options}" "${packageManager} ${options}"
 }
@@ -113,6 +112,24 @@ pruneOrphans () {
 	if [[ -n "${orphans}" ]]; then
 		# shellcheck disable=SC2086
 		so "pruneOrphans" "pacman --noconfirm --remove --recursive --unneeded ${orphans}"
+	fi
+}
+
+
+removeOrphanLock () {
+	local lock="/var/lib/pacman/db.lck"
+
+	if [[ -f "${lock}" ]]; then
+		local modified; modified="$(stat --format=%Y "${lock}")"
+		local booted; booted="$(date --date="$(who --boot | cut --delimiter=" " --fields=13-)" +%s)"
+	
+		if [[ $(( "${modified}" - "${booted}" )) -lt 0 ]] ||
+		[[ $(( "$(date +%s)" - "${modified}" )) -gt 86400 ]]; then
+			rm "${lock}"
+		else
+			echo "Update postponed: The package database has a lock younger than a day, and older than boot time" >&2
+			exit 1
+		fi
 	fi
 }
 
