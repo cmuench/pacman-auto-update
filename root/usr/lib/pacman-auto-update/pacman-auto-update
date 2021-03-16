@@ -16,7 +16,7 @@ mainFunction () {
 
 batteryIsCharged () {
 	local capacity="/sys/class/power_supply/BAT1/capacity"
-	[[ "${forceUpdate}" -eq 1 ]] || [[ -f "${capacity}" && "$(cat "${capacity}")" -gt 90 ]]
+	[[ "${forceUpdate}" -eq 1 ]] ||	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -gt 90 ]]
 }
 
 
