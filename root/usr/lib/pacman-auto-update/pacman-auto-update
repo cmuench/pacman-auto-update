@@ -105,9 +105,13 @@ prepareEnvironment () {
 
 
 pruneOldPackages () {
+	local packageManager="${1}"
 	pruneOrphans
-	so "pruneOldPackages: uninstalled" paccache --remove --uninstalled --keep 0
-	so "pruneOldPackages: oldVersions" paccache --remove --keep 2
+
+	if [[ "$(hash paccache 2> /dev/null)" ]]; then
+		so "pruneOldPackages: uninstalled" paccache --remove --uninstalled --keep 0
+		so "pruneOldPackages: oldVersions" paccache --remove --keep 2
+	fi
 }
 
 
