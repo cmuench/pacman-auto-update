@@ -105,7 +105,6 @@ prepareEnvironment () {
 
 
 pruneOldPackages () {
-	local packageManager="${1}"
 	pruneOrphans
 
 	if [[ "$(hash paccache 2> /dev/null)" ]]; then
@@ -172,9 +171,9 @@ so () {
 update () {
 	local packageManager="${*}"
 
-	if [[ ${batteryIsCharged} ]]; then
+	if batteryIsCharged; then
 		ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
-		if [[ ${forcedUpdate} || ${outdatedPackages} ]]; then
+		if forcedUpdate || outdatedPackages "${packageManager}"; then
 			ifNotInterrupted waitFor installUpdates "${packageManager}"
 			ifNotInterrupted waitFor pruneOldPackages
 		fi
