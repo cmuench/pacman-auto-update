@@ -16,7 +16,12 @@ mainFunction () {
 
 batteryIsCharged () {
 	local capacity="/sys/class/power_supply/BAT1/capacity"
-	[[ "${forceUpdate}" -eq 1 ]] ||	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -gt 90 ]]
+	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -gt 90 ]]
+}
+
+
+forcedUpdate () {
+	[[ "${forceUpdate}" -eq 1 ]]
 }
 
 
@@ -63,7 +68,7 @@ criticalTrap () {
 ifNotInterrupted () {
 	local command="${*}"
 
-	if [[ -z "${interrupted}" ]] && batteryIsCharged; then
+	if [[ -z "${interrupted}" ]]; then
 		${command}
 	else
 		exit 0
@@ -86,8 +91,8 @@ nonCriticalTrap () {
 
 outdatedPackages () {
 	local packageManager="${1}"
-	
-	${packageManager} --query --upgrades 2> "/dev/null" || true
+
+	[[ -n "$(${packageManager} --query --upgrades 2> "/dev/null" || true)" ]]
 }
 
 
@@ -162,8 +167,8 @@ so () {
 
 update () {
 	local packageManager="${*}"
-	
-	if [[ "${forceUpdate}" -eq 1 ]] || [[ -n "$(outdatedPackages "${packageManager}")" ]]; then
+
+	if [[ ${forcedUpdate} || ${outdatedPackages} ]] && batteryIsCharged; then
 		ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
 		ifNotInterrupted waitFor installUpdates "${packageManager}"
 		ifNotInterrupted waitFor pruneOldPackages
