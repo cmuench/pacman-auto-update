@@ -108,7 +108,7 @@ pruneOldPackages () {
 
 pruneOrphans () {
 	local orphans; orphans="$(pacman --query --deps --unrequired --quiet || true)"
-	
+
 	if [[ -n "${orphans}" ]]; then
 		# shellcheck disable=SC2086
 		so "pruneOrphans" "pacman --noconfirm --remove --recursive --unneeded ${orphans}"
@@ -144,7 +144,7 @@ setTrap () {
 so () {
 	local tag="${1}"
 	local commands="${*:2}"
-	
+
 	if [[ "${verbose}" -eq 1 ]]; then
 		if ! ${commands}; then
 			exit "${?}"
@@ -173,18 +173,18 @@ update () {
 
 waitFor () {
 	local command="${*}"
-	
+
 	setTrap "criticalTrap"
 	${command} &
-	
+
 	while wait "${!}"; status="${?}"; [[ "${status}" -ge 128 ]]; do
 		sleep 1
 	done
-	
+
 	if [[ "${status}" -ne 0 ]]; then
 		exit "${status}"
 	fi
-	
+
 	setTrap "nonCriticalTrap"
 }
 
