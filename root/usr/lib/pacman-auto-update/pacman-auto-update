@@ -168,10 +168,12 @@ so () {
 update () {
 	local packageManager="${*}"
 
-	ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
-	if [[ ${forcedUpdate} || ${outdatedPackages} ]] && batteryIsCharged; then
-		ifNotInterrupted waitFor installUpdates "${packageManager}"
-		ifNotInterrupted waitFor pruneOldPackages
+	if [[ ${batteryIsCharged} ]]; then
+		ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
+		if [[ ${forcedUpdate} || ${outdatedPackages} ]]; then
+			ifNotInterrupted waitFor installUpdates "${packageManager}"
+			ifNotInterrupted waitFor pruneOldPackages
+		fi
 	fi
 }
 
