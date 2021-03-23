@@ -16,7 +16,12 @@ mainFunction () {
 
 batteryIsCharged () {
 	local capacity="/sys/class/power_supply/BAT1/capacity"
-	[[ "${forceUpdate}" -eq 1 ]] ||	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -gt 90 ]]
+	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -gt 90 ]]
+}
+
+
+forcedUpdate () {
+	[[ "${forceUpdate}" -eq 1 ]]
 }
 
 
@@ -63,7 +68,7 @@ criticalTrap () {
 ifNotInterrupted () {
 	local command="${*}"
 
-	if [[ -z "${interrupted}" ]] && batteryIsCharged; then
+	if [[ -z "${interrupted}" ]]; then
 		${command}
 	else
 		exit 0
@@ -86,8 +91,8 @@ nonCriticalTrap () {
 
 outdatedPackages () {
 	local packageManager="${1}"
-	
-	${packageManager} --query --upgrades 2> "/dev/null" || true
+
+	[[ -n "$(${packageManager} --query --upgrades 2> "/dev/null" || true)" ]]
 }
 
 
@@ -101,14 +106,17 @@ prepareEnvironment () {
 
 pruneOldPackages () {
 	pruneOrphans
-	so "pruneOldPackages: uninstalled" paccache --remove --uninstalled --keep 0
-	so "pruneOldPackages: oldVersions" paccache --remove --keep 2
+
+	if [[ "$(hash paccache 2> /dev/null)" ]]; then
+		so "pruneOldPackages: uninstalled" paccache --remove --uninstalled --keep 0
+		so "pruneOldPackages: oldVersions" paccache --remove --keep 2
+	fi
 }
 
 
 pruneOrphans () {
 	local orphans; orphans="$(pacman --query --deps --unrequired --quiet || true)"
-	
+
 	if [[ -n "${orphans}" ]]; then
 		# shellcheck disable=SC2086
 		so "pruneOrphans" "pacman --noconfirm --remove --recursive --unneeded ${orphans}"
@@ -144,7 +152,7 @@ setTrap () {
 so () {
 	local tag="${1}"
 	local commands="${*:2}"
-	
+
 	if [[ "${verbose}" -eq 1 ]]; then
 		if ! ${commands}; then
 			exit "${?}"
@@ -162,29 +170,31 @@ so () {
 
 update () {
 	local packageManager="${*}"
-	
-	if [[ "${forceUpdate}" -eq 1 ]] || [[ -n "$(outdatedPackages "${packageManager}")" ]]; then
+
+	if batteryIsCharged; then
 		ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
-		ifNotInterrupted waitFor installUpdates "${packageManager}"
-		ifNotInterrupted waitFor pruneOldPackages
+		if forcedUpdate || outdatedPackages "${packageManager}"; then
+			ifNotInterrupted waitFor installUpdates "${packageManager}"
+			ifNotInterrupted waitFor pruneOldPackages
+		fi
 	fi
 }
 
 
 waitFor () {
 	local command="${*}"
-	
+
 	setTrap "criticalTrap"
 	${command} &
-	
+
 	while wait "${!}"; status="${?}"; [[ "${status}" -ge 128 ]]; do
 		sleep 1
 	done
-	
+
 	if [[ "${status}" -ne 0 ]]; then
 		exit "${status}"
 	fi
-	
+
 	setTrap "nonCriticalTrap"
 }
 
