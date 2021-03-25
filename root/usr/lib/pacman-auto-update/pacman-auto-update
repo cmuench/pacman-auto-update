@@ -14,9 +14,11 @@ mainFunction () {
 }
 
 
-batteryIsCharged () {
+checkBattery () {
 	local capacity="/sys/class/power_supply/BAT1/capacity"
-	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -gt 90 ]]
+	if [[ -f "${capacity}" && "$(cat "${capacity}")" -lt 90 ]]; then
+		nonCriticalTrap
+	fi
 }
 
 
@@ -68,6 +70,7 @@ criticalTrap () {
 ifNotInterrupted () {
 	local command="${*}"
 
+	checkBattery
 	if [[ -z "${interrupted}" ]]; then
 		${command}
 	else
@@ -171,12 +174,11 @@ so () {
 update () {
 	local packageManager="${*}"
 
-	if batteryIsCharged; then
-		ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
-		if forcedUpdate || outdatedPackages "${packageManager}"; then
-			ifNotInterrupted waitFor installUpdates "${packageManager}"
-			ifNotInterrupted waitFor pruneOldPackages
-		fi
+	ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
+
+	if forcedUpdate || outdatedPackages "${packageManager}"; then
+		ifNotInterrupted waitFor installUpdates "${packageManager}"
+		ifNotInterrupted waitFor pruneOldPackages
 	fi
 }
 
