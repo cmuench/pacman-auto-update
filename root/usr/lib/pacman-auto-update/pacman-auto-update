@@ -13,12 +13,10 @@ mainFunction () {
 }
 
 
-checkBattery () {
+batteryIsCharged () {
 	local capacity="/sys/class/power_supply/BAT1/capacity"
 
-	if ! forcedUpdate && [[ -f "${capacity}" && "$(cat "${capacity}")" -lt 90 ]]; then
-		nonCriticalTrap
-	fi
+	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -ge 90 ]]
 }
 
 
@@ -70,7 +68,7 @@ criticalTrap () {
 ifNotInterrupted () {
 	local command="${*}"
 
-	if [[ -z "${interrupted}" ]]; then
+	if [[ -z "${interrupted}" ]] && (( batteryIsCharged || forcedUpdate )); then
 		${command}
 	else
 		exit 0
@@ -201,11 +199,4 @@ waitFor () {
 
 
 prepareEnvironment
-mainFunction &
-mainid=$!  # PID of main
-# check the battery until the job is done
-while kill -0 $mainid 2> /dev/null:
-do
-	ifNotInterrupted checkBattery
-	sleep 1
-done
+mainFunction
