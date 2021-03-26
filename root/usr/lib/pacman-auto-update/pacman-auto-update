@@ -70,7 +70,6 @@ criticalTrap () {
 ifNotInterrupted () {
 	local command="${*}"
 
-	checkBattery
 	if [[ -z "${interrupted}" ]]; then
 		${command}
 	else
@@ -202,4 +201,11 @@ waitFor () {
 
 
 prepareEnvironment
-mainFunction
+mainFunction &
+mainid=$!  # PID of main
+# check the battery until the job is done
+while kill -0 $mainid 2> /dev/null:
+do
+	ifNotInterrupted checkBattery
+	sleep 1
+done
