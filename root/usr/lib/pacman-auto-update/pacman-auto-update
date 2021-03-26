@@ -4,7 +4,6 @@
 verbose=0
 forceUpdate=0
 
-
 mainFunction () {
 	removeOrphanLock
 
@@ -16,7 +15,8 @@ mainFunction () {
 
 checkBattery () {
 	local capacity="/sys/class/power_supply/BAT1/capacity"
-	if [[ -f "${capacity}" && "$(cat "${capacity}")" -lt 90 ]]; then
+
+	if ! forcedUpdate && [[ -f "${capacity}" && "$(cat "${capacity}")" -lt 90 ]]; then
 		nonCriticalTrap
 	fi
 }
