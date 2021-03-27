@@ -92,6 +92,7 @@ nonCriticalTrap () {
 outdatedPackages () {
 	local packageManager="${1}"
 
+	so "outdatedPackages: refreshDatabases" ${packageManager} --sync --refresh
 	[[ -n "$(${packageManager} --query --upgrades 2> "/dev/null" || true)" ]]
 }
 
@@ -170,8 +171,6 @@ so () {
 
 update () {
 	local packageManager="${*}"
-
-	ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
 
 	if forcedUpdate || outdatedPackages "${packageManager}"; then
 		ifNotInterrupted waitFor installUpdates "${packageManager}"
