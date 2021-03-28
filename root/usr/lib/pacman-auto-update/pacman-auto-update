@@ -173,6 +173,7 @@ update () {
 	local packageManager="${*}"
 
 	if forcedUpdate || outdatedPackages "${packageManager}"; then
+		ifNotInterrupted installUpdates "${packageManager}" "--downloadonly"
 		ifNotInterrupted waitFor installUpdates "${packageManager}"
 		ifNotInterrupted waitFor pruneOldPackages
 	fi
