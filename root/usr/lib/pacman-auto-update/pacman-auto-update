@@ -4,7 +4,6 @@
 verbose=0
 forceUpdate=0
 
-
 mainFunction () {
 	removeOrphanLock
 
@@ -16,7 +15,8 @@ mainFunction () {
 
 batteryIsCharged () {
 	local capacity="/sys/class/power_supply/BAT1/capacity"
-	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -gt 90 ]]
+
+	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -ge 90 ]]
 }
 
 
@@ -68,7 +68,7 @@ criticalTrap () {
 ifNotInterrupted () {
 	local command="${*}"
 
-	if [[ -z "${interrupted}" ]]; then
+	if [[ -z "${interrupted}" ]] && (( batteryIsCharged || forcedUpdate )); then
 		${command}
 	else
 		exit 0
@@ -92,6 +92,7 @@ nonCriticalTrap () {
 outdatedPackages () {
 	local packageManager="${1}"
 
+	so "outdatedPackages: refreshDatabases" ${packageManager} --sync --refresh
 	[[ -n "$(${packageManager} --query --upgrades 2> "/dev/null" || true)" ]]
 }
 
@@ -130,7 +131,7 @@ removeOrphanLock () {
 	if [[ -f "${lock}" ]]; then
 		local modified; modified="$(stat --format=%Y "${lock}")"
 		local booted; booted="$(date --date="$(who --boot | cut --delimiter=" " --fields=13-)" +%s)"
-	
+
 		if [[ $(( "${modified}" - "${booted}" )) -lt 0 ]] ||
 		[[ $(( "$(date +%s)" - "${modified}" )) -gt 86400 ]]; then
 			rm "${lock}"
@@ -171,12 +172,10 @@ so () {
 update () {
 	local packageManager="${*}"
 
-	if batteryIsCharged; then
-		ifNotInterrupted installUpdates "${packageManager}" "--refresh --downloadonly"
-		if forcedUpdate || outdatedPackages "${packageManager}"; then
-			ifNotInterrupted waitFor installUpdates "${packageManager}"
-			ifNotInterrupted waitFor pruneOldPackages
-		fi
+	if forcedUpdate || outdatedPackages "${packageManager}"; then
+		ifNotInterrupted installUpdates "${packageManager}" "--downloadonly"
+		ifNotInterrupted waitFor installUpdates "${packageManager}"
+		ifNotInterrupted waitFor pruneOldPackages
 	fi
 }
 
@@ -201,3 +200,5 @@ waitFor () {
 
 prepareEnvironment
 mainFunction
+
+# vim: noet:ts=4:sw=4
