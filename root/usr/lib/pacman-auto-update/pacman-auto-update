@@ -68,7 +68,7 @@ criticalTrap () {
 ifNotInterrupted () {
 	local command="${*}"
 
-	if [[ -z "${interrupted}" ]] && (( batteryIsCharged || forcedUpdate )); then
+	if [[ -z "${interrupted}" ]] && [[ batteryIsCharged || forcedUpdate ]]; then
 		${command}
 	else
 		exit 0
