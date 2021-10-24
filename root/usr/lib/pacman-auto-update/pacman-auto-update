@@ -4,11 +4,13 @@
 verbose=0
 forceUpdate=0
 
+
 mainFunction () {
 	removeOrphanLock
 
-	if ! connectionIsMetered; then
-		update "pacman"
+	if ! connectionIsMetered && ( systemIsOutdated || forcedUpdate ); then
+		updateKeyrings
+		updateSystem
 	fi
 }
 
@@ -65,8 +67,15 @@ criticalTrap () {
 }
 
 
+downloadPackage () {
+	local package="${1}"
+
+	so pacman --sync --noconfirm --downloadonly "${package}"
+}
+
+
 ifNotInterrupted () {
-	local command="${*}"
+	local command="${@}"
 
 	if [[ -z "${interrupted}" ]] && [[ batteryIsCharged || forcedUpdate ]]; then
 		${command}
@@ -76,11 +85,26 @@ ifNotInterrupted () {
 }
 
 
-installUpdates () {
-	local packageManager="${1}"
-	local options="--sync --refresh --sysupgrade --noconfirm ${2}"
+installPackage () {
+	local package="${1}"
 
-	so "installUpdates: ${packageManager} ${options}" "${packageManager} ${options}"
+	so pacman --sync --noconfirm "${package}"
+}
+
+
+installUpdates () {
+	so pacman --sync --sysupgrade --noconfirm ${@}
+}
+
+
+keyrings () {
+	local candidates; readarray -t candidates < <(packagesWithKeyword "query" "keyring")
+
+	for candidate in "${candidates[@]}"; do
+		if stringIsDate "$(packageVersion "query" "${candidate}")"; then
+			echo "${candidate}"
+		fi
+	done
 }
 
 
@@ -89,11 +113,44 @@ nonCriticalTrap () {
 }
 
 
-outdatedPackages () {
-	local packageManager="${1}"
+packageInfo () {
+	local operation="${1}"
+	local package="${2}"
+	local section="${3}"
 
-	so "outdatedPackages: refreshDatabases" ${packageManager} --sync --refresh
-	[[ -n "$(${packageManager} --query --upgrades 2> "/dev/null" || true)" ]]
+	pacman --"${operation}" --info "${package}" |
+	grep "^${section}" |
+	cut --delimiter=':' --fields=2- |
+	cut --delimiter=' ' --fields=2
+}
+
+
+packageIsOutdated () {
+	local package="${1}"
+	local localVersion; localVersion="$(packageVersion "query" "${package}")"
+	local remoteVersion; remoteVersion="$(packageVersion "sync" "${package}")"
+
+	[[ "${localVersion}" != "${remoteVersion}" ]]
+}
+
+
+packagesWithKeyword () {
+	local operation="${1}"
+	local keyword="${2}"
+
+	pacman --"${operation}" --search "${keyword}" |
+	grep --invert-match "^ " |
+	cut --delimiter='/' --fields=2 |
+	cut --delimiter=' ' --fields=1
+}
+
+
+packageVersion () {
+	local operation="${1}"
+	local package="${2}"
+
+	packageInfo "${operation}" "${package}" "Version" |
+	cut --delimiter='-' --fields=1
 }
 
 
@@ -109,8 +166,8 @@ pruneOldPackages () {
 	pruneOrphans
 
 	if [[ "$(hash paccache 2> /dev/null)" ]]; then
-		so "pruneOldPackages: uninstalled" paccache --remove --uninstalled --keep 0
-		so "pruneOldPackages: oldVersions" paccache --remove --keep 2
+		so paccache --remove --uninstalled --keep 0
+		so paccache --remove --keep 2
 	fi
 }
 
@@ -119,8 +176,7 @@ pruneOrphans () {
 	local orphans; orphans="$(pacman --query --deps --unrequired --quiet || true)"
 
 	if [[ -n "${orphans}" ]]; then
-		# shellcheck disable=SC2086
-		so "pruneOrphans" "pacman --noconfirm --remove --recursive --unneeded ${orphans}"
+		so pacman --noconfirm --remove --recursive --unneeded "${orphans}"
 	fi
 }
 
@@ -144,15 +200,13 @@ removeOrphanLock () {
 
 
 setTrap () {
-	local operation="${*}"
-	# shellcheck disable=SC2064
+	local operation="${@}"
 	trap "${operation}" ABRT ERR HUP INT QUIT TERM
 }
 
 
 so () {
-	local tag="${1}"
-	local commands="${*:2}"
+	local commands="${@}"
 
 	if [[ "${verbose}" -eq 1 ]]; then
 		if ! ${commands}; then
@@ -163,25 +217,46 @@ so () {
 			error="Command failed: ${commands}"
 		fi
 
-		echo "${tag}: ${error}" >&2
+		echo "${FUNCNAME[1]}: ${error}" >&2
 		exit 1
 	fi
 }
 
 
-update () {
-	local packageManager="${*}"
+stringIsDate () {
+	local string="${@}"
 
-	if forcedUpdate || outdatedPackages "${packageManager}"; then
-		ifNotInterrupted installUpdates "${packageManager}" "--downloadonly"
-		ifNotInterrupted waitFor installUpdates "${packageManager}"
-		ifNotInterrupted waitFor pruneOldPackages
-	fi
+	date +%s --date "${string}" &> /dev/null
+}
+
+
+systemIsOutdated () {
+	so pacman --sync --refresh
+	[[ -n "$(pacman --query --upgrades &> /dev/null || true)" ]]
+}
+
+
+updateKeyrings () {
+	local keyrings; readarray -t keyrings < <(keyrings)
+
+	for keyring in "${keyrings[@]}"; do
+		if packageIsOutdated "${keyring}"; then
+			ifNotInterrupted downloadPackage "${keyring}"
+			ifNotInterrupted waitFor installPackage "${keyring}"
+		fi
+	done
+}
+
+
+updateSystem () {
+	ifNotInterrupted installUpdates "--downloadonly"
+	ifNotInterrupted waitFor installUpdates
+	ifNotInterrupted waitFor pruneOldPackages
 }
 
 
 waitFor () {
-	local command="${*}"
+	local command="${@}"
 
 	setTrap "criticalTrap"
 	${command} &
@@ -200,5 +275,3 @@ waitFor () {
 
 prepareEnvironment
 mainFunction
-
-# vim: noet:ts=4:sw=4
