@@ -232,6 +232,7 @@ stringIsDate () {
 
 systemIsOutdated () {
 	so pacman --sync --refresh
+	so pacman --files --refresh
 	[[ -n "$(pacman --query --upgrades &> /dev/null || true)" ]]
 }
 
