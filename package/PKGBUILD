@@ -1,7 +1,7 @@
 #! /bin/bash
 
 pkgname="pacman-auto-update"
-install="install.sh"
+install="recipes.sh"
 
 pkgdesc="Keeps packages from compiled repositories updated hourly"
 url="https://github.com/cmuench/pacman-auto-update"

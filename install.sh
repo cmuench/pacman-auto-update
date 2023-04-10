@@ -1,22 +1,11 @@
 #! /bin/bash
+set -e
 
+git clone --depth 1 --shallow-submodules https://github.com/cmuench/pacman-auto-update.git
+cd pacman-auto-update/package
 
-post_install () {
-	systemctl enable --now pacman-auto-update.timer || true
-}
+makepkg --syncdeps --needed --rmdeps --force --noconfirm
+sudo pacman --upgrade *.pkg.*
 
-
-post_upgrade () {
-	systemctl --system daemon-reload >/dev/null || true
-	systemctl restart pacman-auto-update.timer || true
-}
-
-
-pre_remove () {
-	systemctl disable --now pacman-auto-update.timer >/dev/null
-}
-
-
-post_remove () {
-	systemctl --system daemon-reload >/dev/null || true
-}
+cd ../../
+rm --recursive pacman-auto-update
