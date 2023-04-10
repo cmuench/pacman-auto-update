@@ -8,13 +8,6 @@ Updates are automatically **postponed** under unfavorable conditions:
 - 🔒 The package database has a **lock** younger than a day, and older than boot time. Otherwise the lock is automatically removed.
 
 
-## Installing
-
-The package is avaliable in the **Arch User Repository**:
-
-https://aur.archlinux.org/packages/pacman-auto-update
-
-
 ## Inspecting status
 
 Of the **service**:
