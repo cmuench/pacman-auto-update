@@ -1,4 +1,5 @@
 #! /bin/bash
+set -em
 
 # For debugging:
 verbose=0
@@ -6,12 +7,12 @@ forceUpdate=0
 
 
 mainFunction () {
-	removeOrphanLock
-
-	if ! connectionIsMetered && ( systemIsOutdated || forcedUpdate ); then
+	if updatingIsFavorable && updatingIsNeeded; then
 		updateKeyrings
 		updateSystem
 	fi
+
+	terminateChildren
 }
 
 
@@ -113,6 +114,26 @@ nonCriticalTrap () {
 }
 
 
+ongoingInstallation () {
+	local lock="/var/lib/pacman/db.lck"
+
+	if [[ -f "${lock}" ]]; then
+		local modified; modified="$(stat --format=%Y "${lock}")"
+		local booted; booted="$(date --date="$(who --boot | cut --delimiter=" " --fields=13-)" +%s)"
+
+		if [[ $(( "${modified}" - "${booted}" )) -lt 0 ]] ||
+		[[ $(( "$(date +%s)" - "${modified}" )) -gt 86400 ]]; then
+			rm "${lock}"
+			false
+		else
+			true
+		fi
+	else
+		false
+	fi
+}
+
+
 packageInfo () {
 	local operation="${1}"
 	local package="${2}"
@@ -155,7 +176,6 @@ packageVersion () {
 
 
 prepareEnvironment () {
-	set -em
 	configureTrap
 	checkPermissions
 	checkDebugVariables
@@ -181,24 +201,6 @@ pruneOrphans () {
 }
 
 
-removeOrphanLock () {
-	local lock="/var/lib/pacman/db.lck"
-
-	if [[ -f "${lock}" ]]; then
-		local modified; modified="$(stat --format=%Y "${lock}")"
-		local booted; booted="$(date --date="$(who --boot | cut --delimiter=" " --fields=13-)" +%s)"
-
-		if [[ $(( "${modified}" - "${booted}" )) -lt 0 ]] ||
-		[[ $(( "$(date +%s)" - "${modified}" )) -gt 86400 ]]; then
-			rm "${lock}"
-		else
-			echo "Update postponed: The package database has a lock younger than a day, and older than boot time" >&2
-			exit 1
-		fi
-	fi
-}
-
-
 setTrap () {
 	local operation="${@}"
 	trap "${operation}" ABRT ERR HUP INT QUIT TERM
@@ -218,7 +220,7 @@ so () {
 		fi
 
 		echo "${FUNCNAME[1]}: ${error}" >&2
-		exit 1
+		false
 	fi
 }
 
@@ -233,19 +235,36 @@ stringIsDate () {
 systemIsOutdated () {
 	so pacman --sync --refresh
 	so pacman --files --refresh
-	[[ -n "$(pacman --query --upgrades &> /dev/null || true)" ]]
+	[[ -n "$(pacman --query --upgrades 2> /dev/null || true)" ]]
+}
+
+
+terminateChildren () {
+	pkill -TERM -P $$ &>/dev/null || true
 }
 
 
 updateKeyrings () {
+	if ! updateKeyringsFromRepo; then
+		updateKeyringsFromServer
+	fi
+}
+
+
+updateKeyringsFromRepo () {
 	local keyrings; readarray -t keyrings < <(keyrings)
 
 	for keyring in "${keyrings[@]}"; do
 		if packageIsOutdated "${keyring}"; then
 			ifNotInterrupted downloadPackage "${keyring}"
-			ifNotInterrupted waitFor installPackage "${keyring}"
+			ifNotInterrupted waitFor installPackage "${keyring}" 2>/dev/null
 		fi
 	done
+}
+
+
+updateKeyringsFromServer () {
+	so pacman-key --refresh-keys
 }
 
 
@@ -256,21 +275,31 @@ updateSystem () {
 }
 
 
+updatingIsFavorable () {
+	! ongoingInstallation && ! connectionIsMetered
+}
+
+
+updatingIsNeeded () {
+	systemIsOutdated || forcedUpdate
+}
+
+
 waitFor () {
 	local command="${@}"
 
 	setTrap "criticalTrap"
 	${command} &
 
-	while wait "${!}"; status="${?}"; [[ "${status}" -ge 128 ]]; do
+	while wait "$!"; status="$?"; [[ "${status}" -ge 128 ]]; do
 		sleep 1
 	done
 
-	if [[ "${status}" -ne 0 ]]; then
-		exit "${status}"
-	fi
-
 	setTrap "nonCriticalTrap"
+
+	if [[ "${status}" -ne 0 ]]; then
+		false
+	fi
 }
 
 
