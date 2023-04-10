@@ -10,16 +10,18 @@ Updates are automatically **postponed** under unfavorable conditions:
 
 ## Installing
 
-Either install from the [**Express Repository**](https://gitlab.com/es20490446e/express-repository/-/wikis/Manual-%F0%9F%94%96/Installing-%F0%9F%93%A5), or in the application **Terminal** enter:
+For having automatic updates of the package, install from the [**Express Repository**](https://gitlab.com/es20490446e/express-repository/-/wikis/Manual-%F0%9F%94%96/Installing-%F0%9F%93%A5).
+
+Or if you prefer not having to add an extra repo, at the exprense of having to manually update the package, in the application **Terminal** enter:
 
 ```sh
-git clone --depth 1 --shallow-submodules https://github.com/cmuench/pacman-auto-update.git
-cd pacman-auto-update
-makepkg --syncdeps --needed --rmdeps --force --noconfirm
-sudo pacman --upgrade *.pkg.*
+curl --silent https://raw.githubusercontent.com/cmuench/pacman-auto-update/master/install.sh | bash
 ```
 
-After installation pacman-auto-update will be **automatically enabled**.
+After installation the software will be **automatically enabled**.
+
+Having this program in the **AUR** is not possible right now, simply because their moderators disagree with having any kind of method for automatically upgrading the system.
+
 
 ## Inspecting status
 
