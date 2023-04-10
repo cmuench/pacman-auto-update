@@ -20,7 +20,7 @@ curl --silent https://raw.githubusercontent.com/cmuench/pacman-auto-update/maste
 
 After installation the software will be **automatically enabled**.
 
-Having this program in the **AUR** is not possible right now, simply because their moderators disagree with having any kind of method for automatically upgrading the system.
+Having this program in the **AUR** is not possible right now, simply because its moderators disagree with having any kind of method for automatically upgrading the system.
 
 
 ## Inspecting status
