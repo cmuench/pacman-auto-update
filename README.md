@@ -16,6 +16,7 @@ Either install from the [**Express Repository**](https://gitlab.com/es20490446e/
 git clone --depth 1 --shallow-submodules https://github.com/cmuench/pacman-auto-update.git
 cd pacman-auto-update
 makepkg --syncdeps --needed --rmdeps --force --noconfirm
+sudo pacman --upgrade *.pkg.*
 ```
 
 After installation pacman-auto-update will be **automatically enabled**.
