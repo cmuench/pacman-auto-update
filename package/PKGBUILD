@@ -7,7 +7,8 @@ pkgdesc="Keeps packages from compiled repositories updated hourly"
 url="https://github.com/cmuench/pacman-auto-update"
 license=("GPL2")
 
-pkgver="$(date +%s)"
+# set pkgver with: date +%s
+pkgver=1682897488
 pkgrel=1
 arch=("any")
 
