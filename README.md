@@ -10,15 +10,13 @@ Updates are automatically **postponed** under unfavorable conditions:
 
 ## Installing
 
-For having automatic updates of this software itself, install from the [**Express Repository**](https://gitlab.com/es20490446e/express-repository/-/wikis/Manual-%F0%9F%94%96/Installing-%F0%9F%93%A5).
-
-Or if you prefer not having to add an extra repo, at the exprense of having to manually update the package, in the application **Terminal** enter:
+In the application **Terminal** enter:
 
 ```sh
 curl --silent https://raw.githubusercontent.com/cmuench/pacman-auto-update/master/install.sh | bash
 ```
 
-After installation the software will be **automatically enabled**.
+After that the software will be **automatically enabled**, and also it will automatically build and upgrade its **own package**.
 
 Having this program in the **AUR** is not possible right now, simply because its moderators disagree with having any kind of method for automatically upgrading the system.
 
