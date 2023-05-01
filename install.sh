@@ -3,22 +3,53 @@ set -e
 
 
 mainFunction () {
-	so rm --recursive --force pacman-auto-update
+	enterAutoupdateBuildDir
+	downloadAutoupdatePackageComponents
+	makePackage
+	updatePackagesHere
+	removeCurrentDir
+}
 
-	so git clone --depth 1 --shallow-submodules "https://github.com/cmuench/pacman-auto-update.git"
-	cd "./pacman-auto-update/package"
 
+downloadAutoupdatePackageComponents () {
+	local url="https://raw.githubusercontent.com/cmuench/pacman-auto-update/master/package"
+
+	curl --silent "${url}/PKGBUILD" > PKGBUILD
+	curl --silent "${url}/recipes.sh" > recipes.sh
+}
+
+
+enterAutoupdateBuildDir () {
+	local dir="/tmp/pacman-auto-update"
+
+	so sudo rm --recursive --force "${dir}"
+	so mkdir --parents "${dir}"
+	cd "${dir}"
+	trap 'removeCurrentDir' INT TERM QUIT ERR
+}
+
+
+makePackage () {
 	export PACKAGER="${USER} <@${HOSTNAME}>"
 	so makepkg --syncdeps --needed --rmdeps --force --noconfirm
-	so sudo pacman --upgrade --noconfirm *.pkg.*
+}
 
-	cd "../.."
-	so rm --recursive --force pacman-auto-update
+
+refreshDatabases () {
+	so sudo pacman --sync --refresh
+	so sudo pacman --files --refresh
+}
+
+
+removeCurrentDir () {
+	local dir="${PWD}"
+	cd ".."
+	so sudo rm --recursive --force "${dir}"
 }
 
 
 so () {
-	local commands="${@}"
+	local commands="${*}"
 
 	if [[ "${verbose}" -eq 1 ]]; then
 		if ! ${commands}; then
@@ -32,6 +63,12 @@ so () {
 		echo "${FUNCNAME[1]}: ${error}" >&2
 		exit 1
 	fi
+}
+
+
+updatePackagesHere () {
+	so sudo pacman --upgrade --noconfirm ./*.pkg.*
+	refreshDatabases
 }
 
 
