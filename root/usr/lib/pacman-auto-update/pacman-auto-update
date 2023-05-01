@@ -8,6 +8,10 @@ forceUpdate=0
 
 mainFunction () {
 	if updatingIsFavorable && updatingIsNeeded; then
+		if updatingAutoupdateIsNeeded; then
+			updateAutoupdate
+		fi
+
 		updateKeyrings
 		updateSystem
 	fi
@@ -16,10 +20,61 @@ mainFunction () {
 }
 
 
+autoupdateIsOutdated () {
+	local repoEpoch; repoEpoch="$(autoupdateRepoEpoch)"
+	local localEpoch; localEpoch="$(autoupdateLocalEpoch)"
+
+	! echo "${localEpoch}" | grep --quiet ':' &&
+	[[ "${repoEpoch}" -gt "${localEpoch}" ]]
+}
+
+
+autoupdateLocalEpoch () {
+	pacman --query --info pacman-auto-update |
+	grep "Version" |
+	cut --delimiter=' ' --fields=11 |
+	cut --delimiter='-' --fields=1
+}
+
+
+autoupdateRepoEpoch () {
+	curl --silent "https://raw.githubusercontent.com/cmuench/pacman-auto-update/master/package/PKGBUILD" |
+	grep "pkgver=" |
+	cut --delimiter='=' --fields=2
+}
+
+
 batteryIsCharged () {
 	local capacity="/sys/class/power_supply/BAT1/capacity"
 
 	[[ ! -f "${capacity}" || "$(cat "${capacity}")" -ge 90 ]]
+}
+
+
+commandAsUser () {
+	local user="${1}"
+	local command="${*:2}"
+
+	#shellcheck disable=SC2086
+	sudo -E -u ${user} ${command}
+}
+
+
+downloadAutoupdatePackageComponents () {
+	local url="https://raw.githubusercontent.com/cmuench/pacman-auto-update/master/package"
+
+	curl --silent "${url}/PKGBUILD" > PKGBUILD
+	curl --silent "${url}/recipes.sh" > recipes.sh
+}
+
+
+enterAutoupdateBuildDir () {
+	local dir="/tmp/pacman-auto-update"
+
+	so rm --recursive --force "${dir}"
+	so mkdir --parents "${dir}"
+	so chown --recursive nobody "${dir}"
+	cd "${dir}"
 }
 
 
@@ -76,9 +131,9 @@ downloadPackage () {
 
 
 ifNotInterrupted () {
-	local command="${@}"
+	local command="${*}"
 
-	if [[ -z "${interrupted}" ]] && [[ batteryIsCharged || forcedUpdate ]]; then
+	if [[ -z "${interrupted}" ]] && [[ "$(batteryIsCharged)" || "$(forcedUpdate)" ]]; then
 		${command}
 	else
 		exit 0
@@ -94,7 +149,8 @@ installPackage () {
 
 
 installUpdates () {
-	so pacman --sync --sysupgrade --noconfirm ${@}
+	so pacman --sync --sysupgrade --noconfirm "${*}"
+	refreshDatabases
 }
 
 
@@ -106,6 +162,12 @@ keyrings () {
 			echo "${candidate}"
 		fi
 	done
+}
+
+
+makePackage () {
+	export PACKAGER="autoupdate <@${HOSTNAME}>"
+	commandAsUser nobody so makepkg --syncdeps --needed --rmdeps --force --noconfirm
 }
 
 
@@ -201,14 +263,27 @@ pruneOrphans () {
 }
 
 
+refreshDatabases () {
+	so pacman --sync --refresh
+	so pacman --files --refresh
+}
+
+
+removeCurrentDir () {
+	local dir="${PWD}"
+	cd ".."
+	so rm --recursive --force "${dir}"
+}
+
+
 setTrap () {
-	local operation="${@}"
-	trap "${operation}" ABRT ERR HUP INT QUIT TERM
+	local operation="${*}"
+	trap '${operation}' ABRT ERR HUP INT QUIT TERM
 }
 
 
 so () {
-	local commands="${@}"
+	local commands="${*}"
 
 	if [[ "${verbose}" -eq 1 ]]; then
 		if ! ${commands}; then
@@ -226,21 +301,29 @@ so () {
 
 
 stringIsDate () {
-	local string="${@}"
+	local string="${*}"
 
 	date +%s --date "${string}" &> /dev/null
 }
 
 
 systemIsOutdated () {
-	so pacman --sync --refresh
-	so pacman --files --refresh
+	refreshDatabases
 	[[ -n "$(pacman --query --upgrades 2> /dev/null || true)" ]]
 }
 
 
 terminateChildren () {
 	pkill -TERM -P $$ &>/dev/null || true
+}
+
+
+updateAutoupdate () {
+	enterAutoupdateBuildDir
+	downloadAutoupdatePackageComponents
+	makePackage
+	waitFor updatePackagesHere
+	removeCurrentDir
 }
 
 
@@ -268,10 +351,21 @@ updateKeyringsFromServer () {
 }
 
 
+updatePackagesHere () {
+	so pacman --upgrade --noconfirm ./*.pkg.*
+	refreshDatabases
+}
+
+
 updateSystem () {
 	ifNotInterrupted installUpdates "--downloadonly"
 	ifNotInterrupted waitFor installUpdates
 	ifNotInterrupted waitFor pruneOldPackages
+}
+
+
+updatingAutoupdateIsNeeded () {
+	autoupdateIsOutdated || forcedUpdate
 }
 
 
@@ -286,7 +380,7 @@ updatingIsNeeded () {
 
 
 waitFor () {
-	local command="${@}"
+	local command="${*}"
 
 	setTrap "criticalTrap"
 	${command} &
