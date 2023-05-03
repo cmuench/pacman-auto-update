@@ -51,38 +51,6 @@ batteryIsCharged () {
 }
 
 
-commandAsUser () {
-	local user="${1}"
-	local command="${*:2}"
-
-	#shellcheck disable=SC2086
-	sudo -E -u ${user} ${command}
-}
-
-
-downloadAutoupdatePackageComponents () {
-	local url="https://raw.githubusercontent.com/cmuench/pacman-auto-update/master/package"
-
-	curl --silent "${url}/PKGBUILD" > PKGBUILD
-	curl --silent "${url}/recipes.sh" > recipes.sh
-}
-
-
-enterAutoupdateBuildDir () {
-	local dir="/tmp/pacman-auto-update"
-
-	so rm --recursive --force "${dir}"
-	so mkdir --parents "${dir}"
-	so chown --recursive nobody "${dir}"
-	cd "${dir}"
-}
-
-
-forcedUpdate () {
-	[[ "${forceUpdate}" -eq 1 ]]
-}
-
-
 checkDebugVariables () {
 	local variables=("verbose" "forceUpdate")
 
@@ -104,6 +72,15 @@ checkPermissions () {
 }
 
 
+commandAsUser () {
+	local user="${1}"
+	local command="${*:2}"
+
+	#shellcheck disable=SC2086
+	sudo -E -u ${user} ${command}
+}
+
+
 configureTrap () {
 	interrupted=""
 	setTrap "nonCriticalTrap"
@@ -111,9 +88,8 @@ configureTrap () {
 
 
 connectionIsMetered () {
-	[[ -f "/usr/bin/nmcli" ]] &&
-	systemctl status NetworkManager | grep --quiet "running" &&
-	nmcli --terse --fields GENERAL.METERED dev show | grep --quiet "yes"
+    systemctl --quiet is-active NetworkManager.service &&
+    nmcli --terse --fields GENERAL.METERED dev show | grep --quiet "yes"
 }
 
 
@@ -123,10 +99,33 @@ criticalTrap () {
 }
 
 
+downloadAutoupdatePackageComponents () {
+	local url="https://raw.githubusercontent.com/cmuench/pacman-auto-update/master/package"
+
+	curl --silent "${url}/PKGBUILD" > PKGBUILD
+	curl --silent "${url}/recipes.sh" > recipes.sh
+}
+
+
 downloadPackage () {
 	local package="${1}"
 
 	so pacman --sync --noconfirm --downloadonly "${package}"
+}
+
+
+enterAutoupdateBuildDir () {
+	local dir="/tmp/pacman-auto-update"
+
+	so rm --recursive --force "${dir}"
+	so mkdir --parents "${dir}"
+	so chown --recursive nobody "${dir}"
+	cd "${dir}"
+}
+
+
+forcedUpdate () {
+	[[ "${forceUpdate}" -eq 1 ]]
 }
 
 
