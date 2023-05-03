@@ -88,8 +88,8 @@ configureTrap () {
 
 
 connectionIsMetered () {
-    systemctl --quiet is-active NetworkManager.service &&
-    nmcli --terse --fields GENERAL.METERED dev show | grep --quiet "yes"
+    nmcli --terse --fields GENERAL.METERED dev show 2>/dev/null |
+    grep --quiet "yes"
 }
 
 
