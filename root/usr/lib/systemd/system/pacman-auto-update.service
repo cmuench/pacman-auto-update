@@ -3,7 +3,7 @@ Description=Pacman Auto Update
 After=network-online.target
 
 [Service]
-ExecStart=/usr/lib/pacman-auto-update/pacman-auto-update
+ExecStart=/usr/bin/pacman-auto-update
 Nice=19
 KillMode=process
 SendSIGKILL=no

@@ -74,10 +74,10 @@ checkPermissions () {
 
 commandAsUser () {
 	local user="${1}"
-	local command="${*:2}"
+	local command=("${@:2}")
 
-	#shellcheck disable=SC2086
-	sudo -E -u ${user} ${command}
+	#shellcheck disable=SC2068,SC2086
+	sudo -E -u ${user} ${command[@]}
 }
 
 
@@ -130,10 +130,13 @@ forcedUpdate () {
 
 
 ifNotInterrupted () {
-	local command="${*}"
+	local command=("${@}")
 
-	if [[ -z "${interrupted}" ]] && [[ "$(batteryIsCharged)" || "$(forcedUpdate)" ]]; then
-		${command}
+	if [[ -z "${interrupted}" ]]; then
+		if batteryIsCharged || forcedUpdate; then
+			#shellcheck disable=SC2068
+			${command[@]}
+		fi
 	else
 		exit 0
 	fi
@@ -148,7 +151,8 @@ installPackage () {
 
 
 installUpdates () {
-	so pacman --sync --sysupgrade --noconfirm "${*}"
+	#shellcheck disable=SC2068
+	so pacman --sync --sysupgrade --noconfirm ${@}
 	refreshDatabases
 }
 
@@ -282,15 +286,16 @@ setTrap () {
 
 
 so () {
-	local commands="${*}"
+	local commands=("${@}")
 
 	if [[ "${verbose}" -eq 1 ]]; then
-		if ! ${commands}; then
+		#shellcheck disable=SC2068
+		if ! ${commands[@]}; then
 			exit "${?}"
 		fi
-	elif ! error="$(eval "${commands}" 2>&1 >"/dev/null")" ; then
+	elif ! error="$(eval "${commands[*]}" 2>&1 >"/dev/null")" ; then
 		if [ "${error}" == "" ] ; then
-			error="Command failed: ${commands}"
+			error="Command failed: ${commands[*]}"
 		fi
 
 		echo "${FUNCNAME[1]}: ${error}" >&2
@@ -308,7 +313,7 @@ stringIsDate () {
 
 systemIsOutdated () {
 	refreshDatabases
-	[[ -n "$(pacman --query --upgrades 2> /dev/null || true)" ]]
+	pacman --query --upgrades &> /dev/null
 }
 
 
@@ -379,10 +384,11 @@ updatingIsNeeded () {
 
 
 waitFor () {
-	local command="${*}"
+	local command=("${@}")
 
 	setTrap "criticalTrap"
-	${command} &
+	#shellcheck disable=SC2068
+	${command[@]} &
 
 	while wait "$!"; status="$?"; [[ "${status}" -ge 128 ]]; do
 		sleep 1
