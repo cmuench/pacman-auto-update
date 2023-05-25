@@ -5,6 +5,9 @@ set -em
 verbose=0
 forceUpdate=0
 
+# Other:
+lock="/var/lib/pacman/db.lck"
+
 
 mainFunction () {
 	if updatingIsFavorable && updatingIsNeeded; then
@@ -24,7 +27,7 @@ autoupdateIsOutdated () {
 	local repoEpoch; repoEpoch="$(autoupdateRepoEpoch)"
 	local localEpoch; localEpoch="$(autoupdateLocalEpoch)"
 
-	! echo "${localEpoch}" | grep --quiet ':' &&
+	! [[ "${localEpoch}" =~ : ]] &&
 	[[ "${repoEpoch}" -gt "${localEpoch}" ]]
 }
 
@@ -170,7 +173,7 @@ keyrings () {
 
 makePackage () {
 	export PACKAGER="autoupdate <@${HOSTNAME}>"
-	commandAsUser nobody so makepkg --syncdeps --needed --rmdeps --force --noconfirm
+	so commandAsUser nobody makepkg --syncdeps --needed --rmdeps --force --noconfirm
 }
 
 
@@ -180,8 +183,6 @@ nonCriticalTrap () {
 
 
 ongoingInstallation () {
-	local lock="/var/lib/pacman/db.lck"
-
 	if [[ -f "${lock}" ]]; then
 		local modified; modified="$(stat --format=%Y "${lock}")"
 		local booted; booted="$(date --date="$(who --boot | cut --delimiter=" " --fields=13-)" +%s)"
@@ -267,6 +268,7 @@ pruneOrphans () {
 
 
 refreshDatabases () {
+	waitLock
 	so pacman --sync --refresh
 	so pacman --files --refresh
 }
@@ -294,7 +296,7 @@ so () {
 			exit "${?}"
 		fi
 	elif ! error="$(eval "${commands[*]}" 2>&1 >"/dev/null")" ; then
-		if [ "${error}" == "" ] ; then
+		if [[ "${error}" == "" ]] ; then
 			error="Command failed: ${commands[*]}"
 		fi
 
@@ -399,6 +401,13 @@ waitFor () {
 	if [[ "${status}" -ne 0 ]]; then
 		false
 	fi
+}
+
+
+waitLock () {
+	while [[ -f "${lock}" ]]; do
+		sleep 0.1
+	done
 }
 
 
