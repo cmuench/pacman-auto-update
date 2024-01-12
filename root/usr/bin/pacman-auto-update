@@ -354,10 +354,10 @@ updateKeyringsFromRepo () {
 
 
 updateKeyringsFromServer () {
-	touch "${keyringsLock}"
-	waitFor so pacman-key --init
-	waitFor so pacman-key --refresh-keys
-	rm "${keyringsLock}"
+	so touch "${keyringsLock}"
+	so pacman-key --init
+	so pacman-key --refresh-keys
+	so rm "${keyringsLock}"
 }
 
 
