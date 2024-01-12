@@ -6,7 +6,8 @@ verbose=0
 forceUpdate=0
 
 # Other:
-lock="/var/lib/pacman/db.lck"
+databaseLock="/var/lib/pacman/db.lck"
+keyringsLock="/var/lib/pacman/keys.lck"
 
 
 mainFunction () {
@@ -183,13 +184,13 @@ nonCriticalTrap () {
 
 
 ongoingInstallation () {
-	if [[ -f "${lock}" ]]; then
-		local modified; modified="$(stat --format=%Y "${lock}")"
+	if [[ -f "${databaseLock}" ]]; then
+		local modified; modified="$(stat --format=%Y "${databaseLock}")"
 		local booted; booted="$(date --date="$(who --boot | cut --delimiter=" " --fields=13-)" +%s)"
 
 		if [[ $(( "${modified}" - "${booted}" )) -lt 0 ]] ||
 		[[ $(( "$(date +%s)" - "${modified}" )) -gt 86400 ]]; then
-			rm "${lock}"
+			rm "${databaseLock}"
 			false
 		else
 			true
@@ -334,8 +335,8 @@ updateAutoupdate () {
 
 
 updateKeyrings () {
-	if ! updateKeyringsFromRepo; then
-		updateKeyringsFromServer
+	if [[ -f "${keyringsLock}" ]] || ! updateKeyringsFromRepo; then
+		ifNotInterrupted updateKeyringsFromServer
 	fi
 }
 
@@ -353,7 +354,10 @@ updateKeyringsFromRepo () {
 
 
 updateKeyringsFromServer () {
-	so pacman-key --refresh-keys
+	touch "${keyringsLock}"
+	waitFor so pacman-key --init
+	waitFor so pacman-key --refresh-keys
+	rm "${keyringsLock}"
 }
 
 
@@ -405,7 +409,7 @@ waitFor () {
 
 
 waitLock () {
-	while [[ -f "${lock}" ]]; do
+	while [[ -f "${databaseLock}" ]]; do
 		sleep 0.1
 	done
 }
