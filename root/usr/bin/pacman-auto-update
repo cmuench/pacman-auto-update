@@ -1,9 +1,9 @@
 #! /bin/bash
 set -em
 
-# For debugging:
-verbose=0
-forceUpdate=0
+# For debugging (either "x" or empty):
+verbose=
+forcedUpdate=
 
 # Other:
 databaseLock="/var/lib/pacman/db.lck"
@@ -15,7 +15,7 @@ mainFunction () {
 		if updatingAutoupdateIsNeeded; then
 			updateAutoupdate
 		fi
-
+		
 		updateKeyrings
 		updateSystem
 	fi
@@ -55,21 +55,8 @@ batteryIsCharged () {
 }
 
 
-checkDebugVariables () {
-	local variables=("verbose" "forceUpdate")
-
-	for variable in "${variables[@]}"; do
-		if [[ "${!variable}" -ne 0 ]] && [[ "${!variable}" -ne 1 ]]; then
-			echo "Invalid ${variable}=${!variable}" >&2
-			echo "It can either be 0 or 1"
-			exit 1
-		fi
-	done
-}
-
-
 checkPermissions () {
-	if [[ "$(id -u)" -ne 0 ]]; then
+	if [[ "${UID}" -ne 0 ]]; then
 		sudo "${0}"
 		exit "${?}"
 	fi
@@ -85,21 +72,15 @@ commandAsUser () {
 }
 
 
-configureTrap () {
-	interrupted=""
-	setTrap "nonCriticalTrap"
-}
-
-
 connectionIsMetered () {
     nmcli --terse --fields GENERAL.METERED dev show 2>/dev/null |
     grep --quiet "yes"
 }
 
 
-criticalTrap () {
-	nonCriticalTrap
-	printf "\n🕑 Waiting for critical part to finish\n"
+deferInterruption () {
+	printf "\n🕑 Interrupting when possible...\n"
+	interrupted=true
 }
 
 
@@ -125,25 +106,6 @@ enterAutoupdateBuildDir () {
 	so mkdir --parents "${dir}"
 	so chown --recursive nobody "${dir}"
 	cd "${dir}"
-}
-
-
-forcedUpdate () {
-	[[ "${forceUpdate}" -eq 1 ]]
-}
-
-
-ifNotInterrupted () {
-	local command=("${@}")
-
-	if [[ -z "${interrupted}" ]]; then
-		if batteryIsCharged || forcedUpdate; then
-			#shellcheck disable=SC2068
-			${command[@]}
-		fi
-	else
-		exit 0
-	fi
 }
 
 
@@ -175,11 +137,6 @@ keyrings () {
 makePackage () {
 	export PACKAGER="autoupdate <@${HOSTNAME}>"
 	so commandAsUser nobody makepkg --syncdeps --needed --rmdeps --force --noconfirm
-}
-
-
-nonCriticalTrap () {
-	interrupted=1
 }
 
 
@@ -242,13 +199,6 @@ packageVersion () {
 }
 
 
-prepareEnvironment () {
-	configureTrap
-	checkPermissions
-	checkDebugVariables
-}
-
-
 pruneOldPackages () {
 	pruneOrphans
 
@@ -291,7 +241,7 @@ setTrap () {
 so () {
 	local commands=("${@}")
 
-	if [[ "${verbose}" -eq 1 ]]; then
+	if [[ -n "${verbose}" ]]; then
 		#shellcheck disable=SC2068
 		if ! ${commands[@]}; then
 			exit "${?}"
@@ -334,20 +284,21 @@ updateAutoupdate () {
 }
 
 
-updateKeyrings () {
-	if [[ -f "${keyringsLock}" ]] || ! updateKeyringsFromRepo; then
-		ifNotInterrupted updateKeyringsFromServer
+updateKeyrings () {	
+	if [[ -f "${keyringsLock}" ]] || [[ ! -d "/etc/pacman.d/gnupg" ]] || ! updateKeyringsFromRepo; then
+		updateKeyringsFromServer
 	fi
 }
 
 
 updateKeyringsFromRepo () {
+	local keyring
 	local keyrings; readarray -t keyrings < <(keyrings)
 
 	for keyring in "${keyrings[@]}"; do
 		if packageIsOutdated "${keyring}"; then
-			ifNotInterrupted downloadPackage "${keyring}"
-			ifNotInterrupted waitFor installPackage "${keyring}" 2>/dev/null
+			downloadPackage "${keyring}"
+			waitForExits=false waitFor installPackage "${keyring}" 2>/dev/null
 		fi
 	done
 }
@@ -355,8 +306,12 @@ updateKeyringsFromRepo () {
 
 updateKeyringsFromServer () {
 	so touch "${keyringsLock}"
+	
+	so rm --recursive --force "/etc/pacman.d/gnupg"
 	so pacman-key --init
+	so pacman-key --populate
 	so pacman-key --refresh-keys
+	
 	so rm "${keyringsLock}"
 }
 
@@ -368,42 +323,53 @@ updatePackagesHere () {
 
 
 updateSystem () {
-	ifNotInterrupted installUpdates "--downloadonly"
-	ifNotInterrupted waitFor installUpdates
-	ifNotInterrupted waitFor pruneOldPackages
+	installUpdates "--downloadonly"
+	waitFor installUpdates
+	waitFor pruneOldPackages
 }
 
 
 updatingAutoupdateIsNeeded () {
-	autoupdateIsOutdated || forcedUpdate
+	autoupdateIsOutdated || [[ -n "${forcedUpdate}" ]]
 }
 
 
 updatingIsFavorable () {
-	! ongoingInstallation && ! connectionIsMetered
+	! ongoingInstallation && ! connectionIsMetered && batteryIsCharged
 }
 
 
 updatingIsNeeded () {
-	systemIsOutdated || forcedUpdate
+	systemIsOutdated || [[ -n "${forcedUpdate}" ]]
 }
 
 
 waitFor () {
 	local command=("${@}")
+	
+	if ! batteryIsCharged && [[ -z "${forcedUpdate}" ]]; then
+		exit 0
+	else		
+		interrupted=false
+		trap 'deferInterruption' ABRT ERR HUP INT QUIT TERM
+		#shellcheck disable=SC2068
+		${command[@]} &
 
-	setTrap "criticalTrap"
-	#shellcheck disable=SC2068
-	${command[@]} &
-
-	while wait "$!"; status="$?"; [[ "${status}" -ge 128 ]]; do
-		sleep 1
-	done
-
-	setTrap "nonCriticalTrap"
-
-	if [[ "${status}" -ne 0 ]]; then
-		false
+		while wait "$!"; status="$?"; [[ "${status}" -ge 128 ]]; do
+			sleep 0.1
+		done
+		
+		if [[ "${status}" -ne 0 ]]; then
+			if [[ -z "${waitForExits}" ]] || "${waitForExits}"; then
+				exit "${status}"
+			else
+				false
+			fi
+		elif "${interrupted}"; then
+			exit 130
+		else
+			trap - ABRT ERR HUP INT QUIT TERM
+		fi
 	fi
 }
 
@@ -415,5 +381,5 @@ waitLock () {
 }
 
 
-prepareEnvironment
+checkPermissions
 mainFunction
