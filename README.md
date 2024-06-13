@@ -1,6 +1,6 @@
 # Pacman Auto Update
 
-Keeps packages from compiled repositories updated hourly.
+Keeps all precompiled software packages updated, without user intervention.
 
 Updates are automatically **postponed** under unfavorable conditions:
 - 🔋 The **battery** has less than 90% of charge.
@@ -19,6 +19,16 @@ curl --silent https://raw.githubusercontent.com/cmuench/pacman-auto-update/maste
 After that the software will be **automatically enabled**, and also it will automatically build and upgrade its **own package**.
 
 Having this program in the **AUR** is not possible right now, simply because its moderators disagree with having any kind of method for automatically upgrading the system.
+
+
+## Editing update frequency
+
+By default it updates **hourly**.
+
+**Edit** with:
+```sh
+sudo rnano /usr/lib/systemd/system/pacman-auto-update.timer
+```
 
 
 ## Inspecting status

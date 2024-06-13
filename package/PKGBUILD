@@ -3,17 +3,18 @@
 pkgname="pacman-auto-update"
 install="recipes.sh"
 
-pkgdesc="Keeps packages from compiled repositories updated hourly"
+pkgdesc="Keeps all precompiled software updated"
 url="https://github.com/cmuench/pacman-auto-update"
 license=("GPL2")
 
 # set pkgver with: date +%s
-pkgver=1705530979
+pkgver=1718297794
 pkgrel=1
 arch=("any")
 
 source=("git+${url}")
-b2sums=(SKIP)
+b2sums=("SKIP")
+backup=("usr/lib/systemd/system/pacman-auto-update.timer")
 
 
 depends=(
