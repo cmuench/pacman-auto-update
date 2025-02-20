@@ -6,6 +6,7 @@ verbose=
 forcedUpdate=
 
 # Other:
+LANG="C.utf8"
 databaseLock="/var/lib/pacman/db.lck"
 keyringsLock="/var/lib/pacman/keys.lck"
 
@@ -15,7 +16,7 @@ mainFunction () {
 		if updatingAutoupdateIsNeeded; then
 			updateAutoupdate
 		fi
-		
+
 		updateKeyrings
 		updateSystem
 	fi
@@ -284,7 +285,7 @@ updateAutoupdate () {
 }
 
 
-updateKeyrings () {	
+updateKeyrings () {
 	if [[ -f "${keyringsLock}" ]] || [[ ! -d "/etc/pacman.d/gnupg" ]] || ! updateKeyringsFromRepo; then
 		updateKeyringsFromServer
 	fi
@@ -306,12 +307,12 @@ updateKeyringsFromRepo () {
 
 updateKeyringsFromServer () {
 	so touch "${keyringsLock}"
-	
+
 	so rm --recursive --force "/etc/pacman.d/gnupg"
 	so pacman-key --init
 	so pacman-key --populate
 	so pacman-key --refresh-keys
-	
+
 	so rm "${keyringsLock}"
 }
 
@@ -346,10 +347,10 @@ updatingIsNeeded () {
 
 waitFor () {
 	local command=("${@}")
-	
+
 	if ! batteryIsCharged && [[ -z "${forcedUpdate}" ]]; then
 		exit 0
-	else		
+	else
 		interrupted=false
 		trap 'deferInterruption' ABRT ERR HUP INT QUIT TERM
 		#shellcheck disable=SC2068
@@ -358,7 +359,7 @@ waitFor () {
 		while wait "$!"; status="$?"; [[ "${status}" -ge 128 ]]; do
 			sleep 0.1
 		done
-		
+
 		if [[ "${status}" -ne 0 ]]; then
 			if [[ -z "${waitForExits}" ]] || "${waitForExits}"; then
 				exit "${status}"
