@@ -203,7 +203,7 @@ packageVersion () {
 pruneOldPackages () {
 	pruneOrphans
 
-	if [[ "$(hash paccache 2> /dev/null)" ]]; then
+	if hash | grep --quiet paccache; then
 		so paccache --remove --uninstalled --keep 0
 		so paccache --remove --keep 2
 	fi
