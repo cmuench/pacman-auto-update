@@ -8,7 +8,7 @@ url="https://github.com/cmuench/pacman-auto-update"
 license=("GPL2")
 
 # set pkgver with: date +%s
-pkgver=1718297794
+pkgver=1766569004
 pkgrel=1
 arch=("any")
 
