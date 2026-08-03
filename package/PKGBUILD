@@ -8,7 +8,7 @@ url="https://github.com/cmuench/pacman-auto-update"
 license=("GPL2")
 
 # set pkgver with: date +%s
-pkgver=1783290851
+pkgver=1785719930
 pkgrel=1
 arch=("any")
 
@@ -18,6 +18,7 @@ backup=("usr/lib/systemd/system/pacman-auto-update.timer")
 
 
 depends=(
+	libnotify
 	pacman-contrib
 	systemd
 )

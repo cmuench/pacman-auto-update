@@ -7,6 +7,8 @@ Updates are automatically **postponed** under unfavorable conditions:
 - 💸 networkmanager is installed, and the **connection** is guessed as metered.
 - 🔒 The package database has a **lock** younger than a day, and older than boot time. Otherwise the lock is automatically removed.
 
+If auto-updating **fails**, a desktop notification appears during login.
+
 
 ## Installing
 

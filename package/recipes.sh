@@ -2,21 +2,24 @@
 
 
 post_install () {
-	systemctl enable --now pacman-auto-update.timer || true
+	systemctl enable --now pacman-auto-update.timer
+	systemctl enable --user --global pacman-auto-update-notifier.service
 }
 
 
 post_upgrade () {
-	systemctl --system daemon-reload >/dev/null || true
-	systemctl restart pacman-auto-update.timer || true
+	systemctl --system daemon-reload
+	systemctl restart pacman-auto-update.timer
+	systemctl enable --user --global pacman-auto-update-notifier.service
 }
 
 
 pre_remove () {
-	systemctl disable --now pacman-auto-update.timer >/dev/null
+	systemctl disable --user --global pacman-auto-update-notifier.service
+	systemctl disable --now pacman-auto-update.timer
 }
 
 
 post_remove () {
-	systemctl --system daemon-reload >/dev/null || true
+	systemctl --system daemon-reload
 }

@@ -1,0 +1,666 @@
+#! /bin/bash
+# shellcheck disable=SC2034
+set -e
+
+title_aa="Cusiyyi yan"
+message_aa="Iyyi ken abitey"
+
+title_af="Bywerkings beskikbaar"
+message_af="Voer dit self uit"
+
+title_agr="Yamajmatai awai"
+message_agr="Aminak umika"
+
+title_ak="Nsakraeɛ foforɔ wɔ hɔ"
+message_ak="Yɛ no wo ara"
+
+title_am="ዝማኔዎች ይገኛሉ"
+message_am="እራስዎ ያከናውኗቸው"
+
+title_an="Actualizacions disponibles"
+message_an="Realiza-las manualment"
+
+title_anp="अपडेट उपलब्ध बा"
+message_anp="ओकरा खुद करीं"
+
+title_ar="التحديثات متوفرة"
+message_ar="قم بتنفيذها يدويًا"
+
+title_as="আপডেটবোৰ উপলব্ধ"
+message_as="সিহতক মেনুৱেলি সম্পাদন কৰক"
+
+title_ast="Anovamientos disponibles"
+message_ast="Fai-les manualmente"
+
+title_ayc="Machaqachäwinaka utji"
+message_ayc="Jumaw luraña"
+
+title_az="Yeniləmələr mövcuddur"
+message_az="Onları manual şəkildə yerinə yetirin"
+
+title_be="Даступныя абнаўленні"
+message_be="Выканайце іх уручную"
+
+title_bem="Ukupyaikwa kwaliba"
+message_bem="Cita fweka"
+
+title_ber="Ilugan yellan"
+message_ber="Xdem-iten s ufus"
+
+title_bg="Налични актуализации"
+message_bg="Изпълнете ги ръчно"
+
+title_bhb="अपडेट उपलब्ध छे"
+message_bhb="जाते करो"
+
+title_bho="अपडेट उपलब्ध बा"
+message_bho="इनका खुदे करीं"
+
+title_bi="Ol niufala update i stap"
+message_bi="Mekem olgeta yu wan"
+
+title_bn="আপডেট উপলব্ধ"
+message_bn="সেগুলি ম্যানুয়ালি সম্পন্ন করুন"
+
+title_bo="གསར་སྒྱུར་ཡོད།"
+message_bo="རང་གིས་བཟོས་དང།"
+
+title_br="Hizivadennoù hegerz"
+message_br="Ober anezho gant an dorn"
+
+title_brx="अपडेट थांख'गोन"
+message_brx="नोंथाङा खालामथार"
+
+title_bs="Dostupna ažuriranja"
+message_bs="Izvršite ih ručno"
+
+title_byn="ሓደሽቲ ኣለው"
+message_byn="ባዕልኻ ግበሮም"
+
+title_ca="Actualitzacions disponibles"
+message_ca="Realitza-les manualment"
+
+title_ce="Керла хийцамаш ю"
+message_ce="Царна жима беза"
+
+title_chr="ᏗᏓᏛᏁᎯ ᎠᏂᎦᎾᏄᎪᎢ"
+message_chr="ᏨᏒᎭ ᏄᏍᏛ ᎿᎭᏛᏁᎵ"
+
+title_ckb="نوێکردنەوەکان بەردەستن"
+message_ckb="بە دەستی ئەنجامیان بدە"
+
+title_cmn="有可用更新"
+message_cmn="请手动执行"
+
+title_crh="Yañalamalar bar"
+message_crh="Olarnı elden yapıñız"
+
+title_cs="Jsou k dispozici aktualizace"
+message_cs="Proveďte je ručně"
+
+title_csb="Dostãpné aktualizacëje"
+message_csb="Wëkonajta je rãczno"
+
+title_cv="Ҫӗнетӳсем пур"
+message_cv="Вӗсене хӑвӑр тытӑр"
+
+title_cy="Diweddariadau ar gael"
+message_cy="Gwnewch nhw â llaw"
+
+title_da="Opdateringer tilgængelige"
+message_da="Udfør dem manuelt"
+
+title_de="Updates verfügbar"
+message_de="Führen Sie sie manuell aus"
+
+title_doi="अपडेट उपलब्ध"
+message_doi="इन्हां आप करो"
+
+title_dsb="Aktualizacije su k dispoziciji"
+message_dsb="Wuwjeźćo je manuelnje"
+
+title_dv="އަޕްޑޭޓްތައް ލިބެން ހުރި"
+message_dv="އަމިއްލައަށް ކުރައްވާ"
+
+title_dz="གསར་སྒྱུར་ཐོབ་ཡོད།"
+message_dz="རང་གིས་བགྱིད།"
+
+title_el="Διαθέσιμες ενημερώσεις"
+message_el="Εκτελέστε τις χειροκίνητα"
+
+title_en="Updates available"
+message_en="Perform them manually"
+
+title_eo="Ĝisdatigoj disponeblas"
+message_eo="Faru ilin permane"
+
+title_es="Actualizaciones disponibles"
+message_es="Realízalas manualmente"
+
+title_et="Uuendused on saadaval"
+message_et="Tehke need käsitsi"
+
+title_eu="Eguneraketak eskuragarri"
+message_eu="Egin itzazu eskuz"
+
+title_fa="به‌روزرسانی‌ها موجود است"
+message_fa="آن‌ها را به‌صورت دستی انجام دهید"
+
+title_ff="Kesuɗi hino"
+message_ff="Waɗ ɗum e junngo"
+
+title_fi="Päivityksiä saatavilla"
+message_fi="Suorita ne manuaalisesti"
+
+title_fil="May mga update na available"
+message_fil="Gawin ito nang mano-mano"
+
+title_fo="Uppfeeringar tøkar"
+message_fo="Ger tær sjálvur"
+
+title_fr="Mises à jour disponibles"
+message_fr="Effectuez-les manuellement"
+
+title_fur="Inzornamentis disponibii"
+message_fur="Fasilis a man"
+
+title_fy="Fernijingen beskikber"
+message_fy="Fier se sels út"
+
+title_ga="Nuashonruithe ar fáil"
+message_ga="Déan iad de láimh"
+
+title_gd="Ùrachaidhean rim faighinn"
+message_gd="Dèan iad a làimh"
+
+title_gez="ሐድሳት አለው"
+message_gez="በገዛ እዴከ ግበር"
+
+title_gl="Actualizacións dispoñibles"
+message_gl="Execútaas manualmente"
+
+title_gu="અપડેટ્સ ઉપલબ્ધ છે"
+message_gu="તેમને જાતે કરો"
+
+title_gv="Nuchaghaghyn ry gheddyn"
+message_gv="Jean ad lesh laue"
+
+title_ha="Sabuntawa suna samuwa"
+message_ha="Yi su da hannu"
+
+title_hak="有更新可用"
+message_hak="請自家做"
+
+title_he="עדכונים זמינים"
+message_he="בצע אותם באופן ידני"
+
+title_hi="अपडेट उपलब्ध हैं"
+message_hi="उन्हें मैन्युअल रूप से करें"
+
+title_hif="Update available hai"
+message_hif="Unko khud karo"
+
+title_hne="अपडेट उपलब्ध हे"
+message_hne="इन्ला अपने करव"
+
+title_hr="Dostupne su nadogradnje"
+message_hr="Izvršite ih ručno"
+
+title_hsb="Aktualizacije su k dispoziciji"
+message_hsb="Wukonajće je manuelnje"
+
+title_ht="Mizajou disponib"
+message_ht="Fè yo manyèlman"
+
+title_hu="Frissítések érhetők el"
+message_hu="Végezze el őket manuálisan"
+
+title_hy="Հասանելի են թարմացումներ"
+message_hy="Կատարեք դրանք ձեռքով"
+
+title_ia="Actualisationes disponibile"
+message_ia="Executa los manualmente"
+
+title_id="Pembaruan tersedia"
+message_id="Lakukan secara manual"
+
+title_ig="Mmelite dị"
+message_ig="Mee ha n'aka"
+
+title_ik="Iñuuniagvik atuutinngittuq"
+message_ik="Aturaqtaan"
+
+title_is="Uppfærslur í boði"
+message_is="Framkvæmdu þær handvirkt"
+
+title_it="Aggiornamenti disponibili"
+message_it="Eseguili manualmente"
+
+title_iu="ᓄᑖᖑᖅᑐᑦ ᐱᔭᐅᔪᓐᓇᖅᑐᑦ"
+message_iu="ᖃᐃᖁᔨᑦᑎᐊᖅᑐᒥᒃ ᓴᙲᑦᑎᐊᖅᑐᒥᒃ"
+
+title_ja="アップデートが利用可能です"
+message_ja="手動で実行してください"
+
+title_ka="ხელმისაწვდომია განახლებები"
+message_ka="შეასრულეთ ისინი ხელით"
+
+title_kab="Ileqman yellan"
+message_kab="Xdem-iten s ufus"
+
+title_kk="Жаңартулар қолжетімді"
+message_kk="Оларды қолмен орындаңыз"
+
+title_kl="Nutarnerit pissarsiarineqarsinnaapput"
+message_kl="Namminneq iliuuseqarniarit"
+
+title_km="មានបច្ចុប្បន្នភាព"
+message_km="ធ្វើវាដោយដៃ"
+
+title_kn="ಅಪ್‌ಡೇಟ್‌ಗಳು ಲಭ್ಯವಿದೆ"
+message_kn="ಅವುಗಳನ್ನು ಹಸ್ತಚಾಲಿತವಾಗಿ ಮಾಡಿ"
+
+title_ko="업데이트를 사용할 수 있습니다"
+message_ko="수동으로 수행하세요"
+
+title_kok="अपडेट्स उपलब्ध आसात"
+message_kok="तीं आपूण करात"
+
+title_ks="اپڈیٹس دستیاب چھِ"
+message_ks="پننِ ہٲتھؠ کرِو"
+
+title_ku="Nûkirinên berdest hene"
+message_ku="Bi destan pêk bînin"
+
+title_kw="Nowydhevi usadow"
+message_kw="Gwrewgh gans dorn"
+
+title_ky="Жаңылоолор жеткиликтүү"
+message_ky="Аларды кол менен аткарыңыз"
+
+title_lb="Aktualiséierunge verfügbar"
+message_lb="Féiert se manuell aus"
+
+title_lg="Enkyukakyuka eriwo"
+message_lg="Zikole ggwe kennyini"
+
+title_li="Update besjikbaar"
+message_li="Doon ze zelf"
+
+title_lij="Azzornamenti disponibili"
+message_lij="Fasili a man"
+
+title_ln="Bobongisi bozali"
+message_ln="Sala yango na maboko"
+
+title_lo="ມີການອັບເດດ"
+message_lo="ດຳເນີນການດ້ວຍຕົນເອງ"
+
+title_lt="Yra atnaujinimų"
+message_lt="Atlikite juos rankiniu būdu"
+
+title_lv="Ir pieejami atjauninājumi"
+message_lv="Veiciet tos manuāli"
+
+title_lzh="有更新"
+message_lzh="手動行之"
+
+title_mag="अपडेट उपलब्ध बा"
+message_mag="अपने करीं"
+
+title_mai="अपडेट उपलब्ध अछि"
+message_mai="इ स्वयं करू"
+
+title_mfe="Bann mizazour disponib"
+message_mfe="Fer zot manwelman"
+
+title_mg="Misy fanavaozana"
+message_mg="Ataovy manokana"
+
+title_mhr="Уэмдымаш-влак улыт"
+message_mhr="Нуно шкендыч ыште"
+
+title_mi="Kei te wātea ngā whakahōu"
+message_mi="Mahia ā-ringa"
+
+title_miq="Nu apara ba"
+message_miq="Man mankan daukisa"
+
+title_mjw="Update alang"
+message_mjw="Nangthu kot"
+
+title_mk="Достапни ажурирања"
+message_mk="Извршете ги рачно"
+
+title_ml="അപ്‌ഡേറ്റുകൾ ലഭ്യമാണ്"
+message_ml="അവ സ്വമേധയാ ചെയ്യുക"
+
+title_mn="Шинэчлэлт байна"
+message_mn="Тэдгээрийг гараар хийнэ үү"
+
+title_mni="আপডেত লৈবাক ফংলবা"
+message_mni="মশানা তৌবা"
+
+title_mnw="အံက်ဗျစ်တ်ရှိ"
+message_mnw="အလိုအလျောက်ပညာသုတေသန"
+
+title_mr="अद्यतने उपलब्ध आहेत"
+message_mr="ती मॅन्युअली करा"
+
+title_ms="Kemas kini tersedia"
+message_ms="Lakukan secara manual"
+
+title_mt="Aġġornamenti disponibbli"
+message_mt="Wettaqhom manwalment"
+
+title_my="အပ်ဒိတ်များ ရရှိနိုင်ပါသည်"
+message_my="ကိုယ်တိုင်လုပ်ဆောင်ပါ"
+
+title_nan="有更新通"
+message_nan="家己來做"
+
+title_nb="Oppdateringer tilgjengelige"
+message_nb="Utfør dem manuelt"
+
+title_nds="Aktualiseren verföögbor"
+message_nds="Maakt dat sülven"
+
+title_ne="अपडेटहरू उपलब्ध छन्"
+message_ne="तिनीहरूलाई म्यानुअल रूपमा गर्नुहोस्"
+
+title_nhn="Yancuīlīlli oncah"
+message_nhn="Xicchīhua monōmatca"
+
+title_niu="Kua fai e tau fakaou"
+message_niu="Taute e koe ni"
+
+title_nl="Updates beschikbaar"
+message_nl="Voer ze handmatig uit"
+
+title_nn="Oppdateringar tilgjengelege"
+message_nn="Utfør dei manuelt"
+
+title_nr="Ukubuyekezwa kukhona"
+message_nr="Yenza ngesandla"
+
+title_nso="Diphetošo tša moragorago di gona"
+message_nso="Di dire ka boyo"
+
+title_oc="Actualizacions disponiblas"
+message_oc="Realizatz-las manualament"
+
+title_om="Haaromsi ni jira"
+message_om="Ofii kee hojjedhu"
+
+title_or="ଅପଡେଟ୍ ଉପଲବ୍ଧ"
+message_or="ସେଗୁଡ଼ିକୁ ମାନୁଆଲ ଭାବରେ କରନ୍ତୁ"
+
+title_os="Ног хабæрттæ ис"
+message_os="Дæхæдæг сарæз"
+
+title_pa="ਅੱਪਡੇਟ ਉਪਲਬਧ ਹਨ"
+message_pa="ਇਹਨਾਂ ਨੂੰ ਖੁਦ ਕਰੋ"
+
+title_pap="Aktualisashonnan disponibel"
+message_pap="Hasi nan manualmente"
+
+title_pl="Dostępne aktualizacje"
+message_pl="Wykonaj je ręcznie"
+
+title_ps="تازه معلومات شتون لري"
+message_ps="دا په لاسي ډول ترسره کړئ"
+
+title_pt="Atualizações disponíveis"
+message_pt="Execute-as manualmente"
+
+title_quz="Musuqyachiykuna kachkan"
+message_quz="Qan kikin ruray"
+
+title_raj="अपडेट उपलब्ध है"
+message_raj="वे आप करो"
+
+title_rif="Ilqman yellan"
+message_rif="Xdem tit s ufus"
+
+title_ro="Actualizări disponibile"
+message_ro="Efectuați-le manual"
+
+title_ru="Доступны обновления"
+message_ru="Выполните их вручную"
+
+title_rw="Kuvugurura biraboneka"
+message_rw="Bikore ubwawe"
+
+title_sa="उन्नयनानि उपलभ्यन्ते"
+message_sa="स्वयं कुरुत"
+
+title_sah="Саҥа уларыйыылар баар"
+message_sah="Оҕуруйан оҥор"
+
+title_sat="ᱯᱩᱨᱟᱹᱱ ᱢᱮᱱᱟᱜᱼᱟ"
+message_sat="ᱟᱢ ᱟᱬᱟᱜ ᱛᱮᱭᱟᱨ"
+
+title_sc="Atualizatziones disponíbiles"
+message_sc="Faendhelas a manu"
+
+title_sd="اپڊيٽون موجود آهن"
+message_sd="پاڻ ئي ڪريو"
+
+title_se="Ođasmahttimat gávdnojit"
+message_se="Čađat daid ieš"
+
+title_sgs="Aktualėzacėjės īr"
+message_sgs="Padarīk juos patīs"
+
+title_shn="မီးထုိင်ႇ ဢွၵ်ႇလိူဝ်ႇ"
+message_shn="ႁဵတ်းတူဝ်ၵဝ်ႇ"
+
+title_shs="Update sk7ilsem"
+message_shs="Cwelscut te7"
+
+title_si="යාවත්කාලීන ලබා ගත හැක"
+message_si="ඒවා අතින් සිදු කරන්න"
+
+title_sid="Haaroomu no'yaano"
+message_sid="Atto assi assine"
+
+title_sk="K dispozícii sú aktualizácie"
+message_sk="Vykonajte ich manuálne"
+
+title_sl="Na voljo so posodobitve"
+message_sl="Izvedite jih ročno"
+
+title_sm="O loʻo maua fou faʻamatalaga"
+message_sm="Faia e oe lava"
+
+title_so="Cusboonaysiin ayaa la heli karaa"
+message_so="Iyaga gacanta ku samee"
+
+title_sq="Përditësime të disponueshme"
+message_sq="Kryejini ato manualisht"
+
+title_sr="Доступна ажурирања"
+message_sr="Извршите их ручно"
+
+title_ss="Kuvuselelwa kukhona"
+message_ss="Kwenta ngesandla"
+
+title_st="Diphetoho tse ntjha di teng"
+message_st="Di etse ka letsoho"
+
+title_sv="Uppdateringar tillgängliga"
+message_sv="Utför dem manuellt"
+
+title_sw="Sasisho zinapatikana"
+message_sw="Zifanye mwenyewe"
+
+title_syr="ܚܘܕܬ̈ܐ ܐܝܬ"
+message_syr="ܥܒܕ ܐܢܘܢ ܒܐܝܕܐ"
+
+title_szl="Dostympne aktualizacyje"
+message_szl="Zrōbcie to sami"
+
+title_ta="புதுப்பிப்புகள் உள்ளன"
+message_ta="அவற்றை கைமுறையாக செய்யவும்"
+
+title_tcy="ಅಪ್‌ಡೇಟ್‌ ಉಂಡು"
+message_tcy="ಅವೆನ್ ಕೈಟ್ ಮಲ್ಪುಲೆ"
+
+title_te="అప్‌డేట్‌లు అందుబాటులో ఉన్నాయి"
+message_te="వాటిని మాన్యువల్‌గా చేయండి"
+
+title_tg="Навсозиҳо дастрасанд"
+message_tg="Онҳоро дастӣ иҷро кунед"
+
+title_th="มีการอัปเดตพร้อมใช้งาน"
+message_th="ดำเนินการด้วยตนเอง"
+
+title_the="Update uplabdha cha"
+message_the="Aphule garnu"
+
+title_ti="ዝተሓደሱ ኣለዉ"
+message_ti="ባዕልኻ ግበሮም"
+
+title_tig="ሓደስቲ ኣለው"
+message_tig="ብዛትካ ግበሮም"
+
+title_tk="Täzelenmeler bar"
+message_tk="Olary elde ýerine ýetiriň"
+
+title_tl="May mga update na available"
+message_tl="Isagawa ang mga ito nang manu-mano"
+
+title_tn="Diteolo tse disha di teng"
+message_tn="Di dire ka boitirelo"
+
+title_to="ʻOku ʻi ai ha fakahoko"
+message_to="Fai ia ʻe koe pē"
+
+title_tpi="Ol nupela apdet i stap"
+message_tpi="Mekim yu yet"
+
+title_tr="Güncellemeler mevcut"
+message_tr="Bunları manuel olarak gerçekleştirin"
+
+title_ts="Switiveki swi kona"
+message_ts="Swi endle hi voko"
+
+title_tt="Яңартулар бар"
+message_tt="Аларны кулдан башкарыгыз"
+
+title_ug="يېڭىلانمىلار بار"
+message_ug="ئۆزىڭىز ئىجرا قىلىڭ"
+
+title_uk="Доступні оновлення"
+message_uk="Виконайте їх вручну"
+
+title_unm="Achewò xkwiy"
+message_unm="Kil ktëmakalan"
+
+title_ur="اپڈیٹس دستیاب ہیں"
+message_ur="انہیں دستی طور پر انجام دیں"
+
+title_uz="Yangilanishlar mavjud"
+message_uz="Ularni qo'lda bajaring"
+
+title_ve="Khwinifhadzo dzi khona"
+message_ve="Zwi ite nga tshanḓa"
+
+title_vi="Có bản cập nhật"
+message_vi="Thực hiện chúng theo cách thủ công"
+
+title_wa="Metaedjes a djoû disponibes"
+message_wa="Fjez-les vos-minme"
+
+title_wae="Aktualisierige verfiegbar"
+message_wae="Machid schi sealber"
+
+title_wal="Ooratho de'ees"
+message_wal="Ne huucci ootta"
+
+title_wo="Yeesalu am na"
+message_wo="Def ko sa bopp"
+
+title_xh="Uhlaziyo lukhona"
+message_xh="Kwenze ngesandla"
+
+title_yi="פֿאַראַנען אַפּדעיטס"
+message_yi="טו זיי אַליין"
+
+title_yo="Àwọn ìmúdójuìwọ̀n wà"
+message_yo="Ṣe wọ́n fúnra rẹ"
+
+title_yue="有更新可用"
+message_yue="請手動執行"
+
+title_yuw="Update i stap"
+message_yuw="Mekim yu yet"
+
+title_zh="有可用更新"
+message_zh="请手动执行"
+
+title_zu="Izibuyekezo ziyatholakala"
+message_zu="Zenze ngesandla"
+
+
+mainFunction () {
+	local translation; translation="$(translation)"
+
+	if ! updatingIsWorking; then
+		local title="title_${translation}"
+		local message="message_${translation}"
+	
+		notify \
+			"${!title}" \
+			"${!message}"
+	fi
+}
+
+
+errorsAreLogged () {
+	[[ "$(LANG="C.utf8" journalctl --boot=-1 --unit=pacman-auto-update.service --priority=err 2>&1)" != "-- No entries --" ]]
+}
+
+
+language () {
+	echo "${LANG}" |
+	cut --delimiter='.' --fields=1 |
+	cut --delimiter='_' --fields=1
+}
+
+
+notify () {
+	local title="${1}"
+	local message="${2}"
+	local seconds=300
+	
+	notify-send \
+		--icon="system-software-install" \
+		--expire-time="${seconds}000" \
+		"${title}" \
+		"${message}"
+}
+
+
+translation () {
+	local language; language="$(language)"
+	
+	if grep --quiet "^message_${language}" "${0}"; then
+		echo "${language}"
+	else
+		echo "en"
+	fi
+}
+
+
+timerIsEnabled () {
+	systemctl is-enabled --quiet pacman-auto-update.timer
+}
+
+
+updatingIsWorking () {
+	! timerIsEnabled || ! errorsAreLogged
+}
+
+
+mainFunction
