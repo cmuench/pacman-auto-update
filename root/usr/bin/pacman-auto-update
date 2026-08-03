@@ -1,5 +1,6 @@
 #! /bin/bash
 set -em
+enable sleep
 
 # For debugging (either "x" or empty):
 verbose=
@@ -354,7 +355,7 @@ waitFor () {
 		${command[@]} &
 
 		while wait "$!"; status="$?"; [[ "${status}" -ge 128 ]]; do
-			sleep 0.1
+			builtin sleep 0.1
 		done
 
 		if [[ "${status}" -ne 0 ]]; then
@@ -374,7 +375,7 @@ waitFor () {
 
 waitLock () {
 	while [[ -f "${databaseLock}" ]]; do
-		sleep 0.1
+		builtin sleep 0.1
 	done
 }
 
