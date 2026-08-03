@@ -618,7 +618,8 @@ mainFunction () {
 
 
 errorsAreLogged () {
-	[[ "$(LANG="C.utf8" journalctl --boot=-1 --unit=pacman-auto-update.service --priority=err 2>&1)" != "-- No entries --" ]]
+	#shellcheck disable=SC2143
+	[[ -n "$(LANG="C.utf8" journalctl --boot=-1 --unit=pacman-auto-update.service --priority=err 2>/dev/null | grep --invert-match '^--')" ]]
 }
 
 
